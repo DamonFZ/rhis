@@ -47,7 +47,6 @@ class User extends Authenticatable
     public function departments(): BelongsToMany
     {
         return $this->belongsToMany(Department::class, 'department_user')
-            ->withPivot('is_primary')
-            ->withTimestamps();
+            ->withPivot('is_primary');
     }
 }

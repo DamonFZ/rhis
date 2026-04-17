@@ -46,7 +46,6 @@ class Department extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'department_user')
-            ->withPivot('is_primary')
-            ->withTimestamps();
+            ->withPivot('is_primary');
     }
 }
