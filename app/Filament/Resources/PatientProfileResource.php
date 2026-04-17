@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PatientProfileResource\Pages;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\ConsumptionRecordsRelationManager;
+use App\Filament\Resources\PatientProfileResource\RelationManagers\PatientPackagesRelationManager;
 use App\Models\PatientProfile;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -142,12 +143,12 @@ class PatientProfileResource extends Resource
                                     ->hiddenLabel()
                                     ->default('待第三阶段开发'),
                             ]),
-                        Infolists\Components\Tabs\Tab::make('套餐与划扣记录')
+                        Infolists\Components\Tabs\Tab::make('财务与资产')
                             ->schema([
                                 Infolists\Components\TextEntry::make('')
                                     ->label('')
                                     ->hiddenLabel()
-                                    ->default('套餐扣次记录将通过下方的关联管理器进行管理'),
+                                    ->default('请在下方的关联管理器中管理套餐包和消费记录'),
                             ]),
                     ]),
             ]);
@@ -156,6 +157,7 @@ class PatientProfileResource extends Resource
     public static function getRelations(): array
     {
         return [
+            PatientPackagesRelationManager::class,
             ConsumptionRecordsRelationManager::class,
         ];
     }
