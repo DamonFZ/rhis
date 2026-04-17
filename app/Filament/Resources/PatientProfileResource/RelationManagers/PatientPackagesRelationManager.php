@@ -22,7 +22,7 @@ class PatientPackagesRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('rehab_package_id')
                     ->label('选择康复套餐')
-                    ->options(RehabPackage::where('status', 'active')->pluck('name', 'id'))
+                    ->options(RehabPackage::where('status', 1)->pluck('name', 'id'))
                     ->searchable()
                     ->preload()
                     ->live()
@@ -30,7 +30,7 @@ class PatientPackagesRelationManager extends RelationManager
                         if ($state) {
                             $rehabPackage = RehabPackage::find($state);
                             if ($rehabPackage) {
-                                $set('package_code', $rehabPackage->code);
+                                $set('package_code', $rehabPackage->package_code);
                                 $set('package_name', $rehabPackage->name);
                                 $set('package_type', $rehabPackage->package_type);
                                 $set('total_sessions', $rehabPackage->total_sessions);

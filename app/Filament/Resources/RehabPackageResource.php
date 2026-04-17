@@ -59,14 +59,14 @@ class RehabPackageResource extends Resource
                 Forms\Components\Select::make('package_type')
                     ->label('套餐类型')
                     ->options([
-                        'single' => '单次',
-                        'course' => '疗程卡',
-                        'monthly' => '月卡',
-                        'quarterly' => '季卡',
-                        'special' => '特惠次卡',
-                        'item' => '单项服务',
+                        '单次' => '单次',
+                        '疗程卡' => '疗程卡',
+                        '月卡' => '月卡',
+                        '季卡' => '季卡',
+                        '特惠次卡' => '特惠次卡',
+                        '单项服务' => '单项服务',
                     ])
-                    ->default('single')
+                    ->default('单次')
                     ->required(),
                 Forms\Components\TextInput::make('original_price')
                     ->label('原始价格')
@@ -120,15 +120,6 @@ class RehabPackageResource extends Resource
                     ->boolean(),
                 Tables\Columns\TextColumn::make('package_type')
                     ->label('套餐类型')
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'single' => '单次',
-                        'course' => '疗程卡',
-                        'monthly' => '月卡',
-                        'quarterly' => '季卡',
-                        'special' => '特惠次卡',
-                        'item' => '单项服务',
-                        default => $state,
-                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('original_price')
                     ->label('原始价格')
