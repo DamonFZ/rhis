@@ -31,15 +31,14 @@ class DepartmentResource extends Resource
             ->schema([
                 Forms\Components\Select::make('parent_id')
                     ->label('父部门')
-                    ->relationship('parent', 'name')
+                    ->relationship('parent', 'name', function (Builder $query) {
+                        if (request()->route('record')) {
+                            $query->where('id', '!=', request()->route('record'));
+                        }
+                    })
                     ->searchable()
                     ->preload()
                     ->default(0)
-                    ->modifyRecordSelectOptionsQuery(function (Builder $query) {
-                        if ($this->getRecord()) {
-                            $query->where('id', '!=', $this->getRecord()->id);
-                        }
-                    })
                     ->placeholder('顶级部门'),
                 Forms\Components\TextInput::make('name')
                     ->label('部门名称')
