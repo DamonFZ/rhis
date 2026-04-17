@@ -1,4 +1,5 @@
-需要运行项目的相关命令时，需要在命令前面加：docker exec -w /www/wwwroot/linshe/rhis bt\_dev\_env
+1. 当需要运行 php artisan 或者 composer 的操作时，在修改完代码之后就要运行。
+2. 需要运行项目的相关命令时，需要在命令前面加：docker exec -w /www/wwwroot/linshe/rhis bt\_dev\_env
 
 例如：
 
