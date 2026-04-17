@@ -35,10 +35,10 @@ class DepartmentResource extends Resource
                     ->searchable()
                     ->preload()
                     ->default(0)
-                    ->options(function () {
-                        return Department::where('id', '!=', $this->getRecord()?->id ?? 0)
-                            ->pluck('name', 'id')
-                            ->toArray();
+                    ->modifyRecordSelectOptionsQuery(function (Builder $query) {
+                        if ($this->getRecord()) {
+                            $query->where('id', '!=', $this->getRecord()->id);
+                        }
                     })
                     ->placeholder('顶级部门'),
                 Forms\Components\TextInput::make('name')
