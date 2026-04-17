@@ -11,16 +11,41 @@ class PatientPackage extends Model
 
     protected $fillable = [
         'patient_profile_id',
+        'package_code',
         'package_name',
+        'package_type',
         'total_sessions',
         'remaining_sessions',
         'price',
+        'original_price',
+        'average_price',
         'status',
+        'description',
+        'is_extendable',
+        'extension_days',
+        'is_shareable',
+        'purchase_date',
+        'expiry_date',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'original_price' => 'decimal:2',
+        'average_price' => 'decimal:2',
+        'is_extendable' => 'boolean',
+        'is_shareable' => 'boolean',
+        'purchase_date' => 'date',
+        'expiry_date' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $package) {
+            if (empty($package->purchase_date)) {
+                $package->purchase_date = now()->toDateString();
+            }
+        });
+    }
 
     public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

@@ -126,17 +126,27 @@
 
 ## 7. patient_packages（客户套餐包表 / 资产表）
 
-| 字段名                | 类型        | 长度  | 是否可为空 | 默认值   | 备注                    |
-| ------------------- | --------- | --- | ----- | ----- | --------------------- |
-| id                  | bigint    | 20  | 否    | 自增    | 主键                    |
-| patient_profile_id  | bigint    | 20  | 否    | -     | 关联客户ID                |
-| package_name        | varchar   | 200 | 否    | -     | 套餐名称                  |
-| total_sessions      | int       | 11  | 否    | 0     | 总次数                   |
-| remaining_sessions  | int       | 11  | 否    | 0     | 剩余次数                  |
-| price               | decimal   | 10,2| 否    | 0     | 套餐价格                  |
-| status              | varchar   | 20  | 否    | active| 状态：active-有效, completed-已完成 |
-| created_at          | timestamp | -   | 是    | -     | 创建时间                  |
-| updated_at          | timestamp | -   | 是    | -     | 更新时间                  |
+| 字段名                | 类型        | 长度   | 是否可为空 | 默认值   | 备注                    |
+| ------------------- | --------- | ---- | ----- | ----- | --------------------- |
+| id                  | bigint    | 20   | 否    | 自增    | 主键                    |
+| patient_profile_id  | bigint    | 20   | 否    | -     | 关联客户ID                |
+| package_code        | varchar   | 50   | 是    | -     | 套餐编码                  |
+| package_name        | varchar   | 200  | 否    | -     | 套餐名称                  |
+| package_type        | varchar   | 50   | 是    | -     | 套餐类型                  |
+| total_sessions      | int       | 11   | 否    | 0     | 总次数                   |
+| remaining_sessions  | int       | 11   | 否    | 0     | 剩余次数                  |
+| price               | decimal   | 10,2 | 否    | 0     | 套餐价格                  |
+| original_price      | decimal   | 10,2 | 否    | 0     | 原价                    |
+| average_price       | decimal   | 10,2 | 否    | 0     | 均价                    |
+| status              | varchar   | 20   | 否    | active| 状态：active-有效, completed-已完成 |
+| description         | text      | -    | 是    | -     | 套餐描述                  |
+| is_extendable       | tinyint   | 1    | 否    | 0     | 是否可延期                 |
+| extension_days      | int       | 11   | 否    | 0     | 可延期天数                |
+| is_shareable        | tinyint   | 1    | 否    | 0     | 是否可共享                 |
+| purchase_date       | date      | -    | 是    | -     | 购买日期                  |
+| expiry_date         | date      | -    | 是    | -     | 到期日期                  |
+| created_at          | timestamp | -    | 是    | -     | 创建时间                  |
+| updated_at          | timestamp | -    | 是    | -     | 更新时间                  |
 
 **外键：** `patient_profile_id` → `patient_profiles.id`（级联删除）
 **索引：** `status`, `patient_profile_id`
