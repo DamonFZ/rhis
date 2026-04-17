@@ -24,6 +24,15 @@ class Department extends Model
         'status' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function ($department) {
+            if (is_null($department->parent_id) || $department->parent_id === '') {
+                $department->parent_id = 0;
+            }
+        });
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'parent_id');

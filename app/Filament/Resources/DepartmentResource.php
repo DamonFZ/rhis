@@ -34,14 +34,21 @@ class DepartmentResource extends Resource
                     ->relationship('parent', 'name')
                     ->searchable()
                     ->preload()
-                    ->nullable(),
+                    ->default(0)
+                    ->options(function () {
+                        return Department::where('id', '!=', $this->getRecord()?->id ?? 0)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->placeholder('顶级部门'),
                 Forms\Components\TextInput::make('name')
                     ->label('部门名称')
                     ->required()
                     ->maxLength(100),
                 Forms\Components\TextInput::make('code')
                     ->label('部门编码')
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->nullable(),
                 Forms\Components\TextInput::make('level')
                     ->label('层级')
                     ->numeric()
