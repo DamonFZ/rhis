@@ -22,4 +22,14 @@ class PatientProfile extends Model
     {
         return $this->hasMany(PatientPackage::class, 'patient_profile_id');
     }
+
+    public function physicalAssessments(): HasMany
+    {
+        return $this->hasMany(PhysicalAssessment::class, 'patient_profile_id');
+    }
+
+    public function imagingRecords(): HasMany
+    {
+        return $this->hasMany(ImagingRecord::class, 'patient_profile_id');
+    }
 }

@@ -91,7 +91,7 @@
 | total_sessions   | int       | 11  | 否    | 0    | 总次数                                                     |
 | validity_days    | int       | 11  | 否    | 0    | 有效期（天）                                                 |
 | status           | tinyint   | 1   | 否    | 1    | 状态：0-禁用，1-启用                                          |
-| package_type     | varchar   | 50  | 否    | single| 套餐类型：single-单次, course-疗程卡, monthly-月卡, quarterly-季卡, special-特惠次卡, item-单项服务 |
+| package_type     | varchar   | 50  | 否    | 单次| 套餐类型：单次, 疗程卡, 月卡, 季卡, 特惠次卡, 单项服务 |
 | original_price   | decimal   | 10,2| 否    | 0    | 原始价格                                                    |
 | average_price    | decimal   | 10,2| 否    | 0    | 均价                                                      |
 | is_extendable    | boolean   | -   | 否    | false| 是否可延期                                                   |
@@ -119,6 +119,8 @@
 | updated_at       | timestamp | -   | 是    | -   | 更新时间     |
 
 **关联关系：**
+- 一对多 `physicalAssessments`（康复体态评估）
+- 一对多 `imagingRecords`（影像记录）
 - 一对多 `patientPackages`（套餐包）
 - 一对多 `consumptionRecords`（消费记录）
 
@@ -182,9 +184,60 @@
 
 ---
 
-## 9. Laravel 系统表
+## 9. physical_assessments（康复体态评估表）
 
-### 9.1 password_reset_tokens（密码重置 Token 表）
+| 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                      |
+| ------------------- | --------- | --- | ----- | --- | ----------------------- |
+| id                  | bigint    | 20  | 否    | 自增  | 主键                      |
+| patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                  |
+| assessment_no       | varchar   | 50  | 否    | -   | 评估编号（唯一）              |
+| assessment_date     | date      | -   | 否    | -   | 评估日期                   |
+| assessment_type     | tinyint   | 1   | 否    | 1   | 类型：1-初评, 2-复评, 3-末评   |
+| height              | decimal   | 5,2 | 是    | -   | 身高(cm)                  |
+| weight              | decimal   | 5,2 | 是    | -   | 体重(kg)                  |
+| bmi                 | decimal   | 5,2 | 是    | -   | BMI                     |
+| body_fat_rate       | decimal   | 5,2 | 是    | -   | 体脂率(%)                  |
+| circumference       | json      | -   | 是    | -   | 围度数据                    |
+| flexibility         | json      | -   | 是    | -   | 柔软度数据                  |
+| posture_tags        | json      | -   | 是    | -   | 体态标签                   |
+| body_canvas_path    | varchar   | 255 | 是    | -   | 图谱路径                   |
+| remark              | text      | -   | 是    | -   | 备注                      |
+| status              | tinyint   | 1   | 否    | 0   | 状态：0-草稿, 1-已完成        |
+| created_at          | timestamp | -   | 是    | -   | 创建时间                   |
+| updated_at          | timestamp | -   | 是    | -   | 更新时间                   |
+
+**外键：** `patient_profile_id` → `patient_profiles.id`（级联删除）
+
+**关联关系：**
+- 属于 `patientProfile`（belongsTo）
+
+---
+
+## 10. imaging_records（影像记录表）
+
+| 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                    |
+| ------------------- | --------- | --- | ----- | --- | --------------------- |
+| id                  | bigint    | 20  | 否    | 自增  | 主键                    |
+| patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                |
+| record_no           | varchar   | 50  | 否    | -   | 记录编号（唯一）            |
+| record_type         | tinyint   | 1   | 否    | 1   | 类型：1-治疗前, 2-治疗后     |
+| treatment_date      | date      | -   | 否    | -   | 治疗日期                 |
+| photo_urls          | json      | -   | 是    | -   | 图片路径                 |
+| video_url           | varchar   | 255 | 是    | -   | 视频路径                 |
+| remark              | text      | -   | 是    | -   | 备注                    |
+| created_at          | timestamp | -   | 是    | -   | 创建时间                 |
+| updated_at          | timestamp | -   | 是    | -   | 更新时间                 |
+
+**外键：** `patient_profile_id` → `patient_profiles.id`（级联删除）
+
+**关联关系：**
+- 属于 `patientProfile`（belongsTo）
+
+---
+
+## 11. Laravel 系统表
+
+### 11.1 password_reset_tokens（密码重置 Token 表）
 
 | 字段名       | 类型        | 长度  | 备注   |
 | --------- | --------- | --- | ---- |
@@ -192,7 +245,7 @@
 | token     | varchar   | 255 | Token |
 | created_at| timestamp | -   | 创建时间 |
 
-### 9.2 failed_jobs（失败任务表）
+### 11.2 failed_jobs（失败任务表）
 
 | 字段名          | 类型        | 长度   | 备注     |
 | ------------ | --------- | ---- | ------ |
@@ -204,7 +257,7 @@
 | exception    | longtext  | -    | 异常信息   |
 | failed_at    | timestamp | -    | 失败时间   |
 
-### 9.3 personal_access_tokens（API Token 表）
+### 11.3 personal_access_tokens（API Token 表）
 
 | 字段名          | 类型        | 长度   | 备注        |
 | ------------ | --------- | ---- | --------- |
@@ -236,9 +289,11 @@ users ────────< department_user >─────── departmen
 
 rehab_packages（套餐字典，供客户购买参考）
 
-patient_profiles ────< patient_packages ────< consumption_records
-       │                    │
-       └────────────────────┘
+patient_profiles ────< physical_assessments
+       │
+       ├───────< imaging_records
+       │
+       └───────< patient_packages ────< consumption_records
 ```
 
 **设计说明：**
@@ -247,4 +302,4 @@ patient_profiles ────< patient_packages ────< consumption_record
 
 ---
 
-*最后更新：2026-04-17*
+*最后更新：2026-04-18*

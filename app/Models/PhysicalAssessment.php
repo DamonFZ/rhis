@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PhysicalAssessment extends Model
 {
-    protected $table = 'physical_assessments';
-
     protected $fillable = [
-        'patient_id',
+        'patient_profile_id',
         'assessment_no',
         'assessment_date',
         'assessment_type',
@@ -22,12 +20,8 @@ class PhysicalAssessment extends Model
         'flexibility',
         'posture_tags',
         'body_canvas_path',
-        'body_canvas_data',
-        'assessor_id',
         'remark',
         'status',
-        'created_by',
-        'updated_by',
     ];
 
     protected $casts = [
@@ -40,11 +34,26 @@ class PhysicalAssessment extends Model
         'circumference' => 'array',
         'flexibility' => 'array',
         'posture_tags' => 'array',
-        'status' => 'boolean',
+        'status' => 'integer',
     ];
 
-    public function patient(): BelongsTo
+    protected static function booted(): void
     {
-        return $this->belongsTo(PatientProfile::class, 'patient_id');
+        static::creating(function (self $assessment) {
+            if (empty($assessment->assessment_no)) {
+                $assessment->assessment_no = 'PA' . date('YmdHis') . rand(100, 999);
+            }
+            if (empty($assessment->assessment_date)) {
+                $assessment->assessment_date = now()->toDateString();
+            }
+            if (empty($assessment->status)) {
+                $assessment->status = 0;
+            }
+        });
+    }
+
+    public function patientProfile(): BelongsTo
+    {
+        return $this->belongsTo(PatientProfile::class, 'patient_profile_id');
     }
 }

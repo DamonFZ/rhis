@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PatientProfileResource\Pages;
+use App\Filament\Resources\PatientProfileResource\RelationManagers\AssessmentsRelationManager;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\ConsumptionRecordsRelationManager;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\PatientPackagesRelationManager;
 use App\Models\PatientProfile;
@@ -141,7 +142,7 @@ class PatientProfileResource extends Resource
                                 Infolists\Components\TextEntry::make('')
                                     ->label('')
                                     ->hiddenLabel()
-                                    ->default('待第三阶段开发'),
+                                    ->default('请在下方的关联管理器中管理评估记录'),
                             ]),
                         Infolists\Components\Tabs\Tab::make('财务与资产')
                             ->schema([
@@ -157,6 +158,7 @@ class PatientProfileResource extends Resource
     public static function getRelations(): array
     {
         return [
+            AssessmentsRelationManager::class,
             PatientPackagesRelationManager::class,
             ConsumptionRecordsRelationManager::class,
         ];
