@@ -7,6 +7,9 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\ViewField;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -219,6 +222,29 @@ class AssessmentsRelationManager extends RelationManager
                         Forms\Components\Textarea::make('remark')
                             ->label('备注')
                             ->columnSpanFull(),
+                    ]),
+                    
+                Forms\Components\Section::make('体态异常标记 (实景图谱)')
+                    ->schema([
+                        ViewField::make('body_canvas_path')
+                            ->view('filament.forms.components.body-canvas')
+                            ->columnSpanFull()
+                            ->dehydrateStateUsing(function ($state) {
+                                if (blank($state)) return null;
+                                if (str_starts_with($state, 'data:image')) {
+                                    @list($type, $file_data) = explode(';', $state);
+                                    @list(, $file_data) = explode(',', $file_data);
+                                    $imageName = 'assessments/canvas_' . Str::random(10) . '_' . time() . '.jpg';
+                                    Storage::disk('public')->put($imageName, base64_decode($file_data));
+                                    return $imageName;
+                                }
+                                return $state;
+                            })
+                            ->formatStateUsing(function ($state) {
+                                if (blank($state)) return null;
+                                if (str_starts_with($state, 'data:image')) return $state;
+                                return Storage::disk('public')->url($state);
+                            }),
                     ]),
             ]);
     }
