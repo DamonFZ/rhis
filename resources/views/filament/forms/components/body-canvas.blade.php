@@ -29,20 +29,13 @@
         </canvas>
     </div>
 
-    @if ($state)
-        <div class="text-sm text-gray-500">
-            <span class="font-medium">已保存的图片：</span>
-            <span class="text-blue-600">{{ is_string($state) ? $state : '' }}</span>
-        </div>
-    @endif
-
-    <input type="hidden" x-model="state" x-on:change="$wire.set('{{ $name }}', $event.target.value)" />
+    <input type="hidden" x-model="state" x-on:change="$wire.set('{{ $getName() }}', $event.target.value)" />
 </div>
 
 <script>
 function bodyCanvasComponent() {
     return {
-        state: @js($state),
+        state: @js($getState()),
         canvas: null,
         ctx: null,
         isDrawing: false,
