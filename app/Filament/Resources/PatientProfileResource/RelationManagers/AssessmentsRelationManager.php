@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\PatientProfileResource\RelationManagers;
 
-use App\Forms\Components\BodyCanvas;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -226,7 +225,8 @@ class AssessmentsRelationManager extends RelationManager
                     
                 Forms\Components\Section::make('体态异常标记 (实景图谱)')
                     ->schema([
-                        BodyCanvas::make('body_canvas_path')
+                        Forms\Components\ViewField::make('body_canvas_path')
+                            ->view('filament.forms.components.body-canvas')
                             ->columnSpanFull()
                             ->dehydrateStateUsing(function ($state) {
                                 if (blank($state)) return null;

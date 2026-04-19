@@ -21,6 +21,12 @@
             }
         },
         
+        updateState() {
+            this.state = this.canvas.toDataURL('image/jpeg', 0.8);
+            this.$refs.hiddenInput.value = this.state;
+            this.$refs.hiddenInput.dispatchEvent(new Event('input'));
+        },
+        
         loadImage(file) {
             if (!file) return;
             
@@ -45,6 +51,7 @@
                     this.backgroundLoaded = true;
                     
                     this.redraw();
+                    this.updateState();
                 };
                 img.src = e.target.result;
             };
@@ -109,7 +116,7 @@
         stopDrawing() {
             if (this.isDrawing) {
                 this.isDrawing = false;
-                this.state = this.canvas.toDataURL('image/jpeg', 0.8);
+                this.updateState();
             }
         },
         
@@ -138,9 +145,11 @@
             this.redraw();
             
             if (this.backgroundImage) {
-                this.state = this.canvas.toDataURL('image/jpeg', 0.8);
+                this.updateState();
             } else {
                 this.state = null;
+                this.$refs.hiddenInput.value = null;
+                this.$refs.hiddenInput.dispatchEvent(new Event('input'));
             }
         }
     }"
@@ -179,5 +188,11 @@
         ></canvas>
     </div>
 
-    <input type="hidden" x-model="state" x-on:change="$wire.set('{{ $getName() }}', $event.target.value)" />
+    <input 
+        x-ref="hiddenInput"
+        type="hidden" 
+        name="{{ $getName() }}"
+        x-model="state"
+        value="{{ $getState() }}"
+    />
 </div>
