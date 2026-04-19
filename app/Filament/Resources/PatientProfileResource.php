@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PatientProfileResource\Pages;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\AssessmentsRelationManager;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\ConsumptionRecordsRelationManager;
+use App\Filament\Resources\PatientProfileResource\RelationManagers\ImagingRecordsRelationManager;
 use App\Filament\Resources\PatientProfileResource\RelationManagers\PatientPackagesRelationManager;
 use App\Models\PatientProfile;
 use Filament\Forms;
@@ -135,7 +136,7 @@ class PatientProfileResource extends Resource
                                 Infolists\Components\TextEntry::make('')
                                     ->label('')
                                     ->hiddenLabel()
-                                    ->default('待第三阶段开发'),
+                                    ->default('请在下方的关联管理器中管理影像记录'),
                             ]),
                         Infolists\Components\Tabs\Tab::make('康复体态评估')
                             ->schema([
@@ -158,6 +159,7 @@ class PatientProfileResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ImagingRecordsRelationManager::class,
             AssessmentsRelationManager::class,
             PatientPackagesRelationManager::class,
             ConsumptionRecordsRelationManager::class,
