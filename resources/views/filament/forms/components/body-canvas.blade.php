@@ -32,11 +32,11 @@
     @if ($state)
         <div class="text-sm text-gray-500">
             <span class="font-medium">已保存的图片：</span>
-            <span class="text-blue-600">{{ $state }}</span>
+            <span class="text-blue-600">{{ is_string($state) ? $state : '' }}</span>
         </div>
     @endif
 
-    <input type="hidden" x-model="state" name="{{ $getName() }}" id="{{ $getId() }}" />
+    <input type="hidden" x-model="state" name="{{ $name }}" id="{{ $id }}" />
 </div>
 
 <script>
