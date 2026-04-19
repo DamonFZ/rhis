@@ -1,4 +1,4 @@
-<div x-data="bodyCanvas()" x-init="init()" class="space-y-4">
+<div x-data="bodyCanvasComponent()" x-init="init()" class="space-y-4" wire:ignore>
     <div class="flex items-center space-x-4">
         <label class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,13 +36,13 @@
         </div>
     @endif
 
-    <input type="hidden" x-model="state" name="{{ $name }}" id="{{ $id }}" />
+    <input type="hidden" x-model="state" x-on:change="$wire.set('{{ $name }}', $event.target.value)" />
 </div>
 
 <script>
-function bodyCanvas() {
+function bodyCanvasComponent() {
     return {
-        state: @json($state),
+        state: @js($state),
         canvas: null,
         ctx: null,
         isDrawing: false,
@@ -55,12 +55,10 @@ function bodyCanvas() {
             this.canvas = this.$refs.canvas;
             this.ctx = this.canvas.getContext('2d');
             
-            // 设置 canvas 初始尺寸
             this.canvas.width = 600;
             this.canvas.height = 800;
             
-            // 如果有初始状态（已保存的图片），加载它
-            if (this.state && !this.state.startsWith('data:image')) {
+            if (this.state && typeof this.state === 'string' && !this.state.startsWith('data:image')) {
                 this.loadFromUrl(this.state);
             }
         },
@@ -72,7 +70,6 @@ function bodyCanvas() {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    // 等比例压缩图片，最大宽度600px
                     let width = img.width;
                     let height = img.height;
                     const maxWidth = 600;
@@ -83,15 +80,12 @@ function bodyCanvas() {
                         height = height * ratio;
                     }
                     
-                    // 设置 canvas 尺寸
                     this.canvas.width = width;
                     this.canvas.height = height;
                     
-                    // 保存背景图引用
                     this.backgroundImage = img;
                     this.backgroundLoaded = true;
                     
-                    // 绘制背景图
                     this.redraw();
                 };
                 img.src = e.target.result;
@@ -103,15 +97,12 @@ function bodyCanvas() {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => {
-                // 设置 canvas 尺寸
                 this.canvas.width = img.width;
                 this.canvas.height = img.height;
                 
-                // 保存背景图引用
                 this.backgroundImage = img;
                 this.backgroundLoaded = true;
                 
-                // 绘制背景图
                 this.redraw();
             };
             img.onerror = () => {
@@ -121,10 +112,8 @@ function bodyCanvas() {
         },
         
         redraw() {
-            // 清空画布
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // 绘制背景图
             if (this.backgroundImage && this.backgroundLoaded) {
                 this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
             }
@@ -145,19 +134,16 @@ function bodyCanvas() {
             
             const coords = this.getCoordinates(e);
             
-            // 设置画笔样式
             this.ctx.strokeStyle = '#EF4444';
             this.ctx.lineWidth = 3;
             this.ctx.lineCap = 'round';
             this.ctx.lineJoin = 'round';
             
-            // 绘制线条
             this.ctx.beginPath();
             this.ctx.moveTo(this.lastX, this.lastY);
             this.ctx.lineTo(coords.x, coords.y);
             this.ctx.stroke();
             
-            // 更新最后坐标
             this.lastX = coords.x;
             this.lastY = coords.y;
         },
@@ -166,7 +152,6 @@ function bodyCanvas() {
             if (this.isDrawing) {
                 this.isDrawing = false;
                 
-                // 导出 Base64 并更新状态
                 this.state = this.canvas.toDataURL('image/jpeg', 0.8);
             }
         },
@@ -176,16 +161,13 @@ function bodyCanvas() {
             let x, y;
             
             if (e.touches && e.touches.length > 0) {
-                // 触摸事件
                 x = e.touches[0].clientX - rect.left;
                 y = e.touches[0].clientY - rect.top;
             } else {
-                // 鼠标事件
                 x = e.clientX - rect.left;
                 y = e.clientY - rect.top;
             }
             
-            // 计算缩放比例
             const scaleX = this.canvas.width / rect.width;
             const scaleY = this.canvas.height / rect.height;
             
@@ -196,10 +178,8 @@ function bodyCanvas() {
         },
         
         clearDrawing() {
-            // 只清除涂鸦，保留背景
             this.redraw();
             
-            // 更新状态
             if (this.backgroundImage) {
                 this.state = this.canvas.toDataURL('image/jpeg', 0.8);
             } else {

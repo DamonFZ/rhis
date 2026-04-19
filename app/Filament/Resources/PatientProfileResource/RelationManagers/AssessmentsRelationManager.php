@@ -9,7 +9,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\ViewField;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -226,7 +225,7 @@ class AssessmentsRelationManager extends RelationManager
                     
                 Forms\Components\Section::make('体态异常标记 (实景图谱)')
                     ->schema([
-                        ViewField::make('body_canvas_path')
+                        Forms\Components\ViewField::make('body_canvas_path')
                             ->view('filament.forms.components.body-canvas')
                             ->columnSpanFull()
                             ->dehydrateStateUsing(function ($state) {
