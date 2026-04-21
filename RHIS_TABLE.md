@@ -169,8 +169,8 @@
 | package_name        | varchar   | 200 | 是    | -   | 套餐名称         |
 | deducted_sessions   | int       | 11  | 否    | 1   | 本次扣减次数       |
 | remaining_sessions  | int       | 11  | 否    | 0   | 剩余次数         |
-| treatment_date      | date      | -   | 否    | -   | 治疗日期         |
-| treatment_content   | text      | -   | 是    | -   | 治疗内容         |
+| treatment_date      | date      | -   | 否    | -   | 康复日期         |
+| treatment_content   | text      | -   | 是    | -   | 康复内容         |
 | created_at          | timestamp | -   | 是    | -   | 创建时间         |
 | updated_at          | timestamp | -   | 是    | -   | 更新时间         |
 
@@ -220,8 +220,8 @@
 | id                  | bigint    | 20  | 否    | 自增  | 主键                    |
 | patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                |
 | record_no           | varchar   | 50  | 否    | -   | 记录编号（唯一）            |
-| record_type         | tinyint   | 1   | 否    | 1   | 类型：1-治疗前, 2-治疗后     |
-| treatment_date      | date      | -   | 否    | -   | 治疗日期                 |
+| record_type         | tinyint   | 1   | 否    | 1   | 类型：1-康复前, 2-康复后     |
+| treatment_date      | date      | -   | 否    | -   | 康复日期                 |
 | photo_urls          | json      | -   | 是    | -   | 图片路径                 |
 | video_url           | varchar   | 255 | 是    | -   | 视频路径                 |
 | remark              | text      | -   | 是    | -   | 备注                    |

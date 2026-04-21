@@ -25,13 +25,13 @@ class ImagingRecordsRelationManager extends RelationManager
                         Forms\Components\Select::make('record_type')
                             ->label('记录类型')
                             ->options([
-                                1 => '治疗前',
-                                2 => '治疗后',
+                                1 => '康复前',
+                                2 => '康复后',
                             ])
                             ->default(1)
                             ->required(),
                         Forms\Components\DatePicker::make('treatment_date')
-                            ->label('治疗日期')
+                            ->label('康复日期')
                             ->default(now())
                             ->required(),
                     ])
@@ -103,8 +103,8 @@ class ImagingRecordsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('record_type')
                     ->label('类型')
                     ->formatStateUsing(fn (int $state) => match ($state) {
-                        1 => '治疗前',
-                        2 => '治疗后',
+                        1 => '康复前',
+                        2 => '康复后',
                         default => $state,
                     })
                     ->badge()
@@ -114,7 +114,7 @@ class ImagingRecordsRelationManager extends RelationManager
                         default => 'primary',
                     }),
                 Tables\Columns\TextColumn::make('treatment_date')
-                    ->label('治疗日期')
+                    ->label('康复日期')
                     ->date()
                     ->sortable(),
             ])
@@ -122,8 +122,8 @@ class ImagingRecordsRelationManager extends RelationManager
                 Tables\Filters\SelectFilter::make('record_type')
                     ->label('记录类型')
                     ->options([
-                        1 => '治疗前',
-                        2 => '治疗后',
+                        1 => '康复前',
+                        2 => '康复后',
                     ]),
             ])
             ->headerActions([

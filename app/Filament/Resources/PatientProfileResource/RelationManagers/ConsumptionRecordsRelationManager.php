@@ -42,11 +42,11 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->minValue(1)
                     ->required(),
                 Forms\Components\DatePicker::make('treatment_date')
-                    ->label('治疗日期')
+                    ->label('康复日期')
                     ->default(now())
                     ->required(),
                 Forms\Components\Textarea::make('treatment_content')
-                    ->label('治疗内容')
+                    ->label('康复内容')
                     ->columnSpanFull(),
                 // 隐藏字段，由模型逻辑自动设置
                 Forms\Components\Hidden::make('remaining_sessions')
@@ -64,7 +64,7 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->label('套餐名称')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('treatment_date')
-                    ->label('治疗日期')
+                    ->label('康复日期')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deducted_sessions')
@@ -74,7 +74,7 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->label('剩余次数')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('treatment_content')
-                    ->label('治疗内容')
+                    ->label('康复内容')
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
