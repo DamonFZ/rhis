@@ -193,26 +193,37 @@ class ImagingRecordsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->after(function ($record, array $data) {
-                        // 如果填写了套餐和扣减次数，创建消费记录
-                        if (isset($data['patient_package_id']) && isset($data['deducted_sessions'])) {
-                            $packageId = $data['patient_package_id'];
-                            $deductedSessions = $data['deducted_sessions'];
-                            
-                            if ($packageId && $deductedSessions > 0) {
-                                $package = PatientPackage::find($packageId);
-                                if ($package && $package->isActive()) {
-                                    ConsumptionRecord::create([
-                                        'patient_profile_id' => $record->patient_profile_id,
-                                        'patient_package_id' => $packageId,
-                                        'package_name' => $data['package_name'] ?? $package->package_name,
-                                        'deducted_sessions' => $deductedSessions,
-                                        'treatment_date' => $record->treatment_date,
-                                        'treatment_content' => $data['treatment_content'] ?? '',
-                                    ]);
-                                }
+                    ->using(function (array $data, $livewire) {
+                        // 获取当前客户记录
+                        $patientProfile = $livewire->getOwnerRecord();
+                        
+                        // 创建ImagingRecord
+                        $imagingRecord = \App\Models\ImagingRecord::create([
+                            'patient_profile_id' => $patientProfile->id,
+                            'record_no' => $data['record_no'] ?? 'IR' . date('YmdHis') . rand(100, 999),
+                            'record_type' => $data['record_type'],
+                            'treatment_date' => $data['treatment_date'],
+                            'photo_urls' => $data['photo_urls'] ?? null,
+                            'video_url' => $data['video_url'] ?? null,
+                            'remark' => $data['remark'] ?? null,
+                        ]);
+                        
+                        // 如果有套餐扣减信息，创建消费记录
+                        if (isset($data['patient_package_id']) && isset($data['deducted_sessions']) && $data['deducted_sessions'] > 0) {
+                            $package = \App\Models\PatientPackage::find($data['patient_package_id']);
+                            if ($package && $package->isActive()) {
+                                \App\Models\ConsumptionRecord::create([
+                                    'patient_profile_id' => $patientProfile->id,
+                                    'patient_package_id' => $data['patient_package_id'],
+                                    'package_name' => $data['package_name'] ?? $package->package_name,
+                                    'deducted_sessions' => $data['deducted_sessions'],
+                                    'treatment_date' => $data['treatment_date'],
+                                    'treatment_content' => $data['treatment_content'] ?? '',
+                                ]);
                             }
                         }
+                        
+                        return $imagingRecord;
                     }),
             ])
             ->actions([
