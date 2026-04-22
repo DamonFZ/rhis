@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PatientProfile extends Model
 {
@@ -21,6 +22,12 @@ class PatientProfile extends Model
     public function patientPackages(): HasMany
     {
         return $this->hasMany(PatientPackage::class, 'patient_profile_id');
+    }
+
+    public function latestPackage(): HasOne
+    {
+        return $this->hasOne(PatientPackage::class, 'patient_profile_id')
+            ->latestOfMany('purchase_date');
     }
 
     public function physicalAssessments(): HasMany

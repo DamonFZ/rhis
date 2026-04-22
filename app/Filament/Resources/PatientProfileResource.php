@@ -50,9 +50,6 @@ class PatientProfileResource extends Resource
                 Forms\Components\DatePicker::make('join_date')
                     ->label('建档日期')
                     ->default(now()),
-                Forms\Components\TextInput::make('membership_no')
-                    ->label('会员号')
-                    ->maxLength(50),
                 Forms\Components\Textarea::make('initial_symptoms')
                     ->label('初始症状')
                     ->columnSpanFull(),
@@ -73,13 +70,18 @@ class PatientProfileResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('联系电话')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('latestPackage.package_name')
+                    ->label('套餐名称')
+                    ->default('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('latestPackage.remaining_sessions')
+                    ->label('剩余次数')
+                    ->default('-')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('join_date')
                     ->label('建档日期')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('membership_no')
-                    ->label('会员号')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime()
@@ -119,8 +121,6 @@ class PatientProfileResource extends Resource
                                 Infolists\Components\TextEntry::make('join_date')
                                     ->label('建档日期')
                                     ->date(),
-                                Infolists\Components\TextEntry::make('membership_no')
-                                    ->label('会员号'),
                                 Infolists\Components\TextEntry::make('initial_symptoms')
                                     ->label('初始症状')
                                     ->columnSpanFull(),
