@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 class PatientPackagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'patientPackages';
+    protected static ?string $title = '康复套餐';
 
     public function form(Form $form): Form
     {

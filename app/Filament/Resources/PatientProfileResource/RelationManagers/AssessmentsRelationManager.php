@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class AssessmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'physicalAssessments';
+    protected static ?string $title = '体态评估';
 
     public function form(Form $form): Form
     {
