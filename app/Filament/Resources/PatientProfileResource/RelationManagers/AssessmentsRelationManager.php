@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Redirect;
 
 class AssessmentsRelationManager extends RelationManager
 {
@@ -315,6 +317,28 @@ class AssessmentsRelationManager extends RelationManager
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('compare')
+                        ->label('对比成效')
+                        ->icon('heroicon-m-chart-bar')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalHeading('对比评估记录')
+                        ->modalDescription('请确保已选中正好 2 条评估记录进行对比。')
+                        ->action(function (array $records) {
+                            if (count($records) !== 2) {
+                                Notification::make()
+                                    ->title('请选择正好 2 条记录进行对比')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            $ids = collect($records)->pluck('id')->toArray();
+                            sort($ids);
+                            return redirect()->route('filament.admin.pages.compare-assessments', [
+                                'base_id' => $ids[0],
+                                'target_id' => $ids[1],
+                            ]);
+                        }),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
