@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Models\PhysicalAssessment;
+use Illuminate\Support\Facades\Request;
 
 class CompareAssessments extends Page
 {
@@ -21,8 +22,11 @@ class CompareAssessments extends Page
     public bool $hasError = false;
     public string $errorMessage = '';
     
-    public function mount(?int $base_id = null, ?int $target_id = null): void
+    public function mount(): void
     {
+        $base_id = Request::query('base_id');
+        $target_id = Request::query('target_id');
+        
         if (!$base_id || !$target_id) {
             $this->hasError = true;
             $this->errorMessage = '缺少必要的评估记录ID参数';
