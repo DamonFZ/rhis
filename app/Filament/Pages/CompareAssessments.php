@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Models\PhysicalAssessment;
-use Illuminate\Support\Facades\Redirect;
 
 class CompareAssessments extends Page
 {
@@ -19,11 +18,14 @@ class CompareAssessments extends Page
     public ?PhysicalAssessment $baseAssessment = null;
     public ?PhysicalAssessment $targetAssessment = null;
     public ?array $differences = null;
+    public bool $hasError = false;
+    public string $errorMessage = '';
     
     public function mount(?int $base_id = null, ?int $target_id = null): void
     {
         if (!$base_id || !$target_id) {
-            Redirect::route('filament.admin.pages.patient-profiles.list')->send();
+            $this->hasError = true;
+            $this->errorMessage = '缺少必要的评估记录ID参数';
             return;
         }
         
@@ -31,12 +33,14 @@ class CompareAssessments extends Page
         $this->targetAssessment = PhysicalAssessment::find($target_id);
         
         if (!$this->baseAssessment || !$this->targetAssessment) {
-            Redirect::route('filament.admin.pages.patient-profiles.list')->send();
+            $this->hasError = true;
+            $this->errorMessage = '找不到指定的评估记录';
             return;
         }
         
         if ($this->baseAssessment->patient_profile_id !== $this->targetAssessment->patient_profile_id) {
-            Redirect::route('filament.admin.pages.patient-profiles.list')->send();
+            $this->hasError = true;
+            $this->errorMessage = '只能对比同一客户的评估记录';
             return;
         }
         
