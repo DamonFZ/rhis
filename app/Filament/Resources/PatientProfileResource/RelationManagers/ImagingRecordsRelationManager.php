@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\PatientProfileResource\RelationManagers;
 
+use App\Models\PatientPackage;
+use App\Models\ConsumptionRecord;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\CreateAction;
 
 class ImagingRecordsRelationManager extends RelationManager
 {
@@ -38,6 +41,65 @@ class ImagingRecordsRelationManager extends RelationManager
                             ->required(),
                     ])
                     ->columns(3),
+                Forms\Components\Section::make('扣减套餐（可选）')
+                    ->description('如果此次康复需要扣减套餐次数，请选择套餐并填写扣减次数')
+                    ->schema([
+                        Forms\Components\Select::make('patient_package_id')
+                            ->label('选择套餐包')
+                            ->options(function () {
+                                $patientProfile = $this->getOwnerRecord();
+                                return PatientPackage::where('patient_profile_id', $patientProfile->id)
+                                    ->where('status', 'active')
+                                    ->pluck('package_name', 'id')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->nullable()
+                            ->reactive()
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                if (!$state) {
+                                    $set('deducted_sessions', null);
+                                    $set('treatment_content', null);
+                                    $set('package_name', null);
+                                } else {
+                                    $package = PatientPackage::find($state);
+                                    if ($package) {
+                                        $set('package_name', $package->package_name);
+                                    }
+                                }
+                            }),
+                        Forms\Components\TextInput::make('deducted_sessions')
+                            ->label('扣减次数')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->nullable()
+                            ->live()
+                            ->hidden(fn (callable $get) => empty($get('patient_package_id')))
+                            ->afterStateUpdated(function (callable $set, $state, $get) {
+                                $packageId = $get('patient_package_id');
+                                if ($packageId && $state) {
+                                    $package = PatientPackage::find($packageId);
+                                    if ($package && $package->remaining_sessions < $state) {
+                                        $set('warning_message', '套餐剩余次数不足，无法扣减');
+                                    } else {
+                                        $set('warning_message', '');
+                                    }
+                                }
+                            }),
+                        Forms\Components\Textarea::make('treatment_content')
+                            ->label('康复内容')
+                            ->nullable()
+                            ->hidden(fn (callable $get) => empty($get('patient_package_id'))),
+                        Forms\Components\Hidden::make('package_name'),
+                        Forms\Components\Placeholder::make('warning_message')
+                            ->label('')
+                            ->columnSpanFull()
+                            ->hidden(fn (callable $get) => empty($get('warning_message')))
+                            ->content(fn (callable $get) => '<span class="text-red-500">' . $get('warning_message') . '</span>'),
+                    ])
+                    ->columns(2),
                 
                 Forms\Components\Section::make('标准体态照片 SOP')
                     ->schema([
@@ -144,5 +206,31 @@ class ImagingRecordsRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort('treatment_date', 'desc');
+    }
+
+    protected function configureCreateAction(CreateAction $action): void
+    {
+        $action
+            ->after(function ($record, array $data) {
+                // 如果填写了套餐和扣减次数，创建消费记录
+                if (isset($data['patient_package_id']) && isset($data['deducted_sessions'])) {
+                    $packageId = $data['patient_package_id'];
+                    $deductedSessions = $data['deducted_sessions'];
+                    
+                    if ($packageId && $deductedSessions > 0) {
+                        $package = PatientPackage::find($packageId);
+                        if ($package && $package->isActive()) {
+                            ConsumptionRecord::create([
+                                'patient_profile_id' => $record->patient_profile_id,
+                                'patient_package_id' => $packageId,
+                                'package_name' => $data['package_name'] ?? $package->package_name,
+                                'deducted_sessions' => $deductedSessions,
+                                'treatment_date' => $record->treatment_date,
+                                'treatment_content' => $data['treatment_content'] ?? '',
+                            ]);
+                        }
+                    }
+                }
+            });
     }
 }

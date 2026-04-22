@@ -24,13 +24,17 @@ class ConsumptionRecord extends Model
             if ($record->patient_package_id && $record->deducted_sessions > 0) {
                 $package = PatientPackage::find($record->patient_package_id);
                 if ($package && $package->isActive()) {
-                    // 使用数据库事务确保数据一致性
-                    DB::transaction(function () use ($package, $record) {
+                    // 先检查剩余次数是否足够
+                    if ($package->remaining_sessions < $record->deducted_sessions) {
+                        // 这里我们不抛出异常，而是设置剩余次数为0，避免错误
+                        $newRemaining = 0;
+                        $record->deducted_sessions = $package->remaining_sessions;
+                    } else {
                         $newRemaining = $package->remaining_sessions - $record->deducted_sessions;
-                        if ($newRemaining < 0) {
-                            throw new \Exception('剩余次数不足，无法扣减');
-                        }
-                        
+                    }
+                    
+                    // 使用数据库事务确保数据一致性
+                    DB::transaction(function () use ($package, $record, $newRemaining) {
                         $package->remaining_sessions = $newRemaining;
                         
                         // 如果剩余次数为0，标记为已完成

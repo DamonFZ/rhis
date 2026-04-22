@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Validation\ValidationException;
 
 class ConsumptionRecordsRelationManager extends RelationManager
 {
@@ -40,7 +41,19 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->numeric()
                     ->default(1)
                     ->minValue(1)
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, $state, $get) {
+                        $packageId = $get('patient_package_id');
+                        if ($packageId && $state) {
+                            $package = PatientPackage::find($packageId);
+                            if ($package && $package->remaining_sessions < $state) {
+                                $set('warning_message', '套餐剩余次数不足，无法扣减');
+                            } else {
+                                $set('warning_message', '');
+                            }
+                        }
+                    }),
                 Forms\Components\DatePicker::make('treatment_date')
                     ->label('康复日期')
                     ->default(now())
@@ -53,6 +66,11 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->default(0),
                 Forms\Components\Hidden::make('package_name')
                     ->default(''), // 由关联自动填充
+                Forms\Components\Placeholder::make('warning_message')
+                    ->label('')
+                    ->columnSpanFull()
+                    ->hidden(fn (callable $get) => empty($get('warning_message')))
+                    ->content(fn (callable $get) => '<span class="text-red-500">' . $get('warning_message') . '</span>'),
             ]);
     }
 
@@ -76,7 +94,7 @@ class ConsumptionRecordsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('treatment_content')
                     ->label('康复内容')
                     ->limit(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
