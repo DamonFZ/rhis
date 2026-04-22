@@ -104,32 +104,32 @@ class ImagingRecordsRelationManager extends RelationManager
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\FileUpload::make('photo_urls.front')
-                                    ->label('正面站立')
-                                    ->image()
-                                    ->directory('imaging')
-                                    ->required(),
-                                Forms\Components\FileUpload::make('photo_urls.back')
-                                    ->label('背面站立')
-                                    ->image()
-                                    ->directory('imaging')
-                                    ->required(),
-                                Forms\Components\FileUpload::make('photo_urls.left_side')
-                                    ->label('左侧面')
-                                    ->image()
-                                    ->directory('imaging')
-                                    ->required(),
-                                Forms\Components\FileUpload::make('photo_urls.right_side')
-                                    ->label('右侧面')
+                                    ->label('站姿正面')
                                     ->image()
                                     ->directory('imaging')
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.forward_bending')
-                                    ->label('正面前屈弯腰')
+                                    ->label('站姿弯腰正面')
+                                    ->image()
+                                    ->directory('imaging')
+                                    ->required(),
+                                Forms\Components\FileUpload::make('photo_urls.back')
+                                    ->label('站姿背面')
+                                    ->image()
+                                    ->directory('imaging')
+                                    ->required(),
+                                Forms\Components\FileUpload::make('photo_urls.left_side')
+                                    ->label('站姿侧面')
+                                    ->image()
+                                    ->directory('imaging')
+                                    ->required(),
+                                Forms\Components\FileUpload::make('photo_urls.right_side')
+                                    ->label('侧面弯腰')
                                     ->image()
                                     ->directory('imaging')
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.back_sitting')
-                                    ->label('背面坐姿')
+                                    ->label('坐姿背面')
                                     ->image()
                                     ->directory('imaging')
                                     ->required(),
