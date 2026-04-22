@@ -65,7 +65,7 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->sortable(),
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deducted_sessions')
                     ->label('扣减次数')
@@ -79,7 +79,7 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
-                    ->dateTime()
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

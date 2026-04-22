@@ -259,7 +259,7 @@ class AssessmentsRelationManager extends RelationManager
                     ->searchable(),
                 Tables\Columns\TextColumn::make('assessment_date')
                     ->label('评估日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('assessment_type')
                     ->label('类型')
@@ -286,7 +286,7 @@ class AssessmentsRelationManager extends RelationManager
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
-                    ->dateTime()
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

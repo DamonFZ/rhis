@@ -176,11 +176,11 @@ class PatientPackagesRelationManager extends RelationManager
                     ->sortable(),
                 Tables\Columns\TextColumn::make('purchase_date')
                     ->label('购买日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('expiry_date')
                     ->label('到期日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable()
                     ->badge()
                     ->color(fn ($state) => $state && Carbon::parse($state)->isPast() ? 'danger' : 'success'),
@@ -199,7 +199,7 @@ class PatientPackagesRelationManager extends RelationManager
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
-                    ->dateTime()
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

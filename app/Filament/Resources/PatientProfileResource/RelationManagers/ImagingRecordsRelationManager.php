@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 class ImagingRecordsRelationManager extends RelationManager
 {
     protected static string $relationship = 'imagingRecords';
+    protected static ?string $title = '康复记录';
 
     public function form(Form $form): Form
     {
@@ -27,6 +28,7 @@ class ImagingRecordsRelationManager extends RelationManager
                             ->options([
                                 1 => '康复前',
                                 2 => '康复后',
+                                3 => '康复中',
                             ])
                             ->default(1)
                             ->required(),
@@ -105,17 +107,19 @@ class ImagingRecordsRelationManager extends RelationManager
                     ->formatStateUsing(fn (int $state) => match ($state) {
                         1 => '康复前',
                         2 => '康复后',
+                        3 => '康复中',
                         default => $state,
                     })
                     ->badge()
                     ->color(fn (int $state) => match ($state) {
                         1 => 'warning',
                         2 => 'success',
+                        3 => 'info',
                         default => 'primary',
                     }),
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable(),
             ])
             ->filters([
@@ -124,6 +128,7 @@ class ImagingRecordsRelationManager extends RelationManager
                     ->options([
                         1 => '康复前',
                         2 => '康复后',
+                        3 => '康复中',
                     ]),
             ])
             ->headerActions([

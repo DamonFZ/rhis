@@ -78,13 +78,18 @@ class PatientProfileResource extends Resource
                     ->label('剩余次数')
                     ->default('-')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('latestImagingRecord.treatment_date')
+                    ->label('最近康复日期')
+                    ->default('-')
+                    ->date('Y-m-d')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('join_date')
                     ->label('建档日期')
-                    ->date()
+                    ->date('Y-m-d')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
-                    ->dateTime()
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -120,16 +125,16 @@ class PatientProfileResource extends Resource
                                     ->label('联系电话'),
                                 Infolists\Components\TextEntry::make('join_date')
                                     ->label('建档日期')
-                                    ->date(),
+                                    ->date('Y-m-d'),
                                 Infolists\Components\TextEntry::make('initial_symptoms')
                                     ->label('初始症状')
                                     ->columnSpanFull(),
                                 Infolists\Components\TextEntry::make('created_at')
                                     ->label('创建时间')
-                                    ->dateTime(),
+                                    ->dateTime('Y-m-d H:i:s'),
                                 Infolists\Components\TextEntry::make('updated_at')
                                     ->label('更新时间')
-                                    ->dateTime(),
+                                    ->dateTime('Y-m-d H:i:s'),
                             ])->columns(2),
                         Infolists\Components\Tabs\Tab::make('医疗与影像记录')
                             ->schema([
