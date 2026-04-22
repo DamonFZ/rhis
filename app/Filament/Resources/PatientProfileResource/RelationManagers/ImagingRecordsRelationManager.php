@@ -9,7 +9,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\CreateAction;
 
 class ImagingRecordsRelationManager extends RelationManager
 {
@@ -56,7 +55,6 @@ class ImagingRecordsRelationManager extends RelationManager
                             ->searchable()
                             ->nullable()
                             ->reactive()
-                            ->live()
                             ->afterStateUpdated(function (callable $set, $state) {
                                 if (!$state) {
                                     $set('deducted_sessions', null);
@@ -75,7 +73,7 @@ class ImagingRecordsRelationManager extends RelationManager
                             ->default(1)
                             ->minValue(1)
                             ->nullable()
-                            ->live()
+                            ->reactive()
                             ->hidden(fn (callable $get) => empty($get('patient_package_id')))
                             ->afterStateUpdated(function (callable $set, $state, $get) {
                                 $packageId = $get('patient_package_id');
@@ -194,7 +192,28 @@ class ImagingRecordsRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->after(function ($record, array $data) {
+                        // 如果填写了套餐和扣减次数，创建消费记录
+                        if (isset($data['patient_package_id']) && isset($data['deducted_sessions'])) {
+                            $packageId = $data['patient_package_id'];
+                            $deductedSessions = $data['deducted_sessions'];
+                            
+                            if ($packageId && $deductedSessions > 0) {
+                                $package = PatientPackage::find($packageId);
+                                if ($package && $package->isActive()) {
+                                    ConsumptionRecord::create([
+                                        'patient_profile_id' => $record->patient_profile_id,
+                                        'patient_package_id' => $packageId,
+                                        'package_name' => $data['package_name'] ?? $package->package_name,
+                                        'deducted_sessions' => $deductedSessions,
+                                        'treatment_date' => $record->treatment_date,
+                                        'treatment_content' => $data['treatment_content'] ?? '',
+                                    ]);
+                                }
+                            }
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -206,31 +225,5 @@ class ImagingRecordsRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort('treatment_date', 'desc');
-    }
-
-    protected function configureCreateAction(CreateAction $action): void
-    {
-        $action
-            ->after(function ($record, array $data) {
-                // 如果填写了套餐和扣减次数，创建消费记录
-                if (isset($data['patient_package_id']) && isset($data['deducted_sessions'])) {
-                    $packageId = $data['patient_package_id'];
-                    $deductedSessions = $data['deducted_sessions'];
-                    
-                    if ($packageId && $deductedSessions > 0) {
-                        $package = PatientPackage::find($packageId);
-                        if ($package && $package->isActive()) {
-                            ConsumptionRecord::create([
-                                'patient_profile_id' => $record->patient_profile_id,
-                                'patient_package_id' => $packageId,
-                                'package_name' => $data['package_name'] ?? $package->package_name,
-                                'deducted_sessions' => $deductedSessions,
-                                'treatment_date' => $record->treatment_date,
-                                'treatment_content' => $data['treatment_content'] ?? '',
-                            ]);
-                        }
-                    }
-                }
-            });
     }
 }
