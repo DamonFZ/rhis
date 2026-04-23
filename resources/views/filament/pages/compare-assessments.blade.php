@@ -11,238 +11,280 @@
                 <p class="text-red-700 mt-2">{{ $errorMessage }}</p>
             </div>
         @else
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">患者信息</h2>
-                @if ($baseAssessment && $baseAssessment->patientProfile)
-                    <p class="mb-2"><strong>患者：</strong>{{ $baseAssessment->patientProfile->name }}</p>
-                @endif
+            <div class="flex items-center justify-between mb-4 print:hidden">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">康复成效对比报告</h1>
+                    <p class="text-gray-600 mt-1">
+                        @if ($firstRecord && $firstRecord->patientProfile)
+                            患者：{{ $firstRecord->patientProfile->name }}
+                        @endif
+                    </p>
+                </div>
+                <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
+                    </svg>
+                    打印报告
+                </button>
             </div>
-        
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-3">
-                        评估 #1 - {{ $baseAssessment?->assessment_no }}
-                    </h3>
-                    <p><strong>日期：</strong>{{ $baseAssessment?->assessment_date?->format('Y-m-d') }}</p>
-                    <p><strong>类型：</strong>{{ match($baseAssessment?->assessment_type) {
-                        1 => '初评',
-                        2 => '复评',
-                        3 => '末评',
-                        default => '未知'
-                    } }}</p>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-3">
-                        评估 #2 - {{ $targetAssessment?->assessment_no }}
-                    </h3>
-                    <p><strong>日期：</strong>{{ $targetAssessment?->assessment_date?->format('Y-m-d') }}</p>
-                    <p><strong>类型：</strong>{{ match($targetAssessment?->assessment_type) {
-                        1 => '初评',
-                        2 => '复评',
-                        3 => '末评',
-                        default => '未知'
-                    } }}</p>
+
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">基础体测</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指标名称</th>
+                                @foreach ($records as $record)
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ $record->assessment_date->format('Y-m-d') }}
+                                    </th>
+                                @endforeach
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">总成效</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $basicLabels = [
+                                    'height' => '身高 (cm)',
+                                    'weight' => '体重 (kg)',
+                                    'bmi' => 'BMI',
+                                    'body_fat_rate' => '体脂率 (%)',
+                                ];
+                            @endphp
+                            @foreach ($basicLabels as $key => $label)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $label }}</td>
+                                    @foreach ($records as $record)
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $record->$key ?? '-' }}
+                                        </td>
+                                    @endforeach
+                                    @php
+                                        $delta = $differences['basic'][$key]['delta'] ?? 0;
+                                        $isGood = $delta < 0;
+                                    @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center {{ $isGood ? 'text-green-600' : ($delta > 0 ? 'text-red-600' : 'text-gray-500') }}">
+                                        @if ($delta > 0)
+                                            &uarr; +{{ number_format(abs($delta), 2) }}
+                                        @elseif ($delta < 0)
+                                            &darr; -{{ number_format(abs($delta), 2) }}
+                                        @else
+                                            无变化
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            
-            @if ($differences)
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">基础体测对比</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">差值</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @php
-                                    $basicLabels = [
-                                        'height' => '身高 (cm)',
-                                        'weight' => '体重 (kg)',
-                                        'bmi' => 'BMI',
-                                        'body_fat_rate' => '体脂率 (%)'
-                                    ];
-                                @endphp
-                                @foreach ($differences['basic'] as $key => $data)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $basicLabels[$key] ?? $key }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['delta'] > 0 ? 'text-red-600' : ($data['delta'] < 0 ? 'text-green-600' : 'text-gray-500') }}">
-                                            {{ $data['delta'] > 0 ? '+' : '' }}{{ number_format($data['delta'], 2) }}
-                                        </td>
-                                    </tr>
+
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">详细围度</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指标名称</th>
+                                @foreach ($records as $record)
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ $record->assessment_date->format('Y-m-d') }}
+                                    </th>
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">围度对比</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">差值</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @php
-                                    $circLabels = [
-                                        'chest' => '胸围',
-                                        'waist' => '腰围',
-                                        'hip' => '臀围',
-                                        'left_arm' => '左臂围',
-                                        'right_arm' => '右臂围',
-                                        'left_thigh' => '左大腿围',
-                                        'right_thigh' => '右大腿围'
-                                    ];
-                                @endphp
-                                @foreach ($differences['circumference'] as $key => $data)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $circLabels[$key] ?? $key }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ? $data['base'] . ' cm' : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ? $data['target'] . ' cm' : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['delta'] > 0 ? 'text-red-600' : ($data['delta'] < 0 ? 'text-green-600' : 'text-gray-500') }}">
-                                            {{ $data['delta'] > 0 ? '+' : '' }}{{ number_format($data['delta'], 2) }} cm
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">总成效</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $circLabels = [
+                                    'chest' => '胸围 (cm)',
+                                    'waist' => '腰围 (cm)',
+                                    'hip' => '臀围 (cm)',
+                                    'left_arm' => '左臂围 (cm)',
+                                    'right_arm' => '右臂围 (cm)',
+                                    'left_thigh' => '左大腿围 (cm)',
+                                    'right_thigh' => '右大腿围 (cm)',
+                                ];
+                            @endphp
+                            @foreach ($circLabels as $key => $label)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $label }}</td>
+                                    @foreach ($records as $record)
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $record->circumference[$key] ?? '-' }}
                                         </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">柔软度对比</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">变化</th>
+                                    @endforeach
+                                    @php
+                                        $delta = $differences['circumference'][$key]['delta'] ?? 0;
+                                        $isGood = $delta < 0;
+                                    @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center {{ $isGood ? 'text-green-600' : ($delta > 0 ? 'text-red-600' : 'text-gray-500') }}">
+                                        @if ($delta > 0)
+                                            &uarr; +{{ number_format(abs($delta), 2) }}
+                                        @elseif ($delta < 0)
+                                            &darr; -{{ number_format(abs($delta), 2) }}
+                                        @else
+                                            无变化
+                                        @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @php
-                                    $flexLabels = [
-                                        'trunk' => '躯干',
-                                        'hamstrings' => '腘绳肌',
-                                        'iliopsoas' => '髂腰肌群',
-                                        'quadriceps' => '股四头肌',
-                                        'calf' => '小腿肌群',
-                                        'shoulder_1' => '肩部1',
-                                        'shoulder_2' => '肩部2'
-                                    ];
-                                @endphp
-                                @foreach ($differences['flexibility'] as $key => $data)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $flexLabels[$key] ?? $key }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['changed'] ? 'text-yellow-600' : 'text-gray-400' }}">
-                                            {{ $data['changed'] ? '✓ 有变化' : '无变化' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">体态评估-侧面对比</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">变化</th>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">柔软度评估</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指标名称</th>
+                                @foreach ($records as $record)
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ $record->assessment_date->format('Y-m-d') }}
+                                    </th>
+                                @endforeach
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">总成效</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $flexLabels = [
+                                    'trunk' => '躯干',
+                                    'hamstrings' => '腘绳肌',
+                                    'iliopsoas' => '髂腰肌群',
+                                    'quadriceps' => '股四头肌',
+                                    'calf' => '小腿肌群',
+                                    'shoulder_1' => '肩部1',
+                                    'shoulder_2' => '肩部2',
+                                ];
+                            @endphp
+                            @foreach ($flexLabels as $key => $label)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $label }}</td>
+                                    @foreach ($records as $record)
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $record->flexibility[$key] ?? '-' }}
+                                        </td>
+                                    @endforeach
+                                    @php
+                                        $changed = $differences['flexibility'][$key]['changed'] ?? false;
+                                    @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center {{ $changed ? 'text-yellow-600' : 'text-gray-500' }}">
+                                        {{ $changed ? '有变化' : '无变化' }}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @php
-                                    $postureSideLabels = [
-                                        'side_head' => '头部',
-                                        'side_cervical' => '颈椎',
-                                        'side_scapula' => '肩胛骨',
-                                        'side_thoracic' => '胸椎',
-                                        'side_lumbar' => '腰椎',
-                                        'side_pelvis' => '骨盆',
-                                        'side_knee' => '膝关节'
-                                    ];
-                                @endphp
-                                @foreach ($differences['posture_side'] as $key => $data)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $postureSideLabels[$key] ?? $key }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ? implode(', ', $data['base']) : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ? implode(', ', $data['target']) : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['changed'] ? 'text-yellow-600' : 'text-gray-400' }}">
-                                            {{ $data['changed'] ? '✓ 有变化' : '无变化' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">体态评估-背面对比</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">变化</th>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">体态评估-侧面</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指标名称</th>
+                                @foreach ($records as $record)
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ $record->assessment_date->format('Y-m-d') }}
+                                    </th>
+                                @endforeach
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">总成效</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $postureSideLabels = [
+                                    'side_head' => '头部',
+                                    'side_cervical' => '颈椎',
+                                    'side_scapula' => '肩胛骨',
+                                    'side_thoracic' => '胸椎',
+                                    'side_lumbar' => '腰椎',
+                                    'side_pelvis' => '骨盆',
+                                    'side_knee' => '膝关节',
+                                ];
+                            @endphp
+                            @foreach ($postureSideLabels as $key => $label)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $label }}</td>
+                                    @foreach ($records as $record)
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $record->posture_tags[$key] ? implode(', ', $record->posture_tags[$key]) : '-' }}
+                                        </td>
+                                    @endforeach
+                                    @php
+                                        $changed = $differences['posture_side'][$key]['changed'] ?? false;
+                                    @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center {{ $changed ? 'text-yellow-600' : 'text-gray-500' }}">
+                                        {{ $changed ? '有变化' : '无变化' }}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @php
-                                    $postureBackLabels = [
-                                        'back_cervical' => '颈椎',
-                                        'back_shoulder' => '肩部',
-                                        'back_scapula' => '肩胛骨',
-                                        'back_thoracolumbar' => '胸腰椎',
-                                        'back_pelvis' => '骨盆',
-                                        'back_knee' => '膝关节',
-                                        'back_foot' => '足弓'
-                                    ];
-                                @endphp
-                                @foreach ($differences['posture_back'] as $key => $data)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $postureBackLabels[$key] ?? $key }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ? implode(', ', $data['base']) : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ? implode(', ', $data['target']) : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['changed'] ? 'text-yellow-600' : 'text-gray-400' }}">
-                                            {{ $data['changed'] ? '✓ 有变化' : '无变化' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            @endif
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">体态评估-背面</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指标名称</th>
+                                @foreach ($records as $record)
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ $record->assessment_date->format('Y-m-d') }}
+                                    </th>
+                                @endforeach
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">总成效</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $postureBackLabels = [
+                                    'back_cervical' => '颈椎',
+                                    'back_shoulder' => '肩部',
+                                    'back_scapula' => '肩胛骨',
+                                    'back_thoracolumbar' => '胸腰椎',
+                                    'back_pelvis' => '骨盆',
+                                    'back_knee' => '膝关节',
+                                    'back_foot' => '足弓',
+                                ];
+                            @endphp
+                            @foreach ($postureBackLabels as $key => $label)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $label }}</td>
+                                    @foreach ($records as $record)
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $record->posture_tags[$key] ? implode(', ', $record->posture_tags[$key]) : '-' }}
+                                        </td>
+                                    @endforeach
+                                    @php
+                                        $changed = $differences['posture_back'][$key]['changed'] ?? false;
+                                    @endphp
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center {{ $changed ? 'text-yellow-600' : 'text-gray-500' }}">
+                                        {{ $changed ? '有变化' : '无变化' }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         @endif
         
-        <div class="flex gap-4">
-            <a href="{{ url()->previous() }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition">
+        <div class="flex gap-4 print:hidden">
+            <a href="{{ url()->previous() }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
                 返回
             </a>
         </div>

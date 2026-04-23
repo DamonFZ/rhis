@@ -16,110 +16,135 @@ class CompareAssessments extends Page
     
     protected static bool $shouldRegisterNavigation = false;
     
-    public ?PhysicalAssessment $baseAssessment = null;
-    public ?PhysicalAssessment $targetAssessment = null;
-    public ?array $differences = null;
+    public $records = [];
+    public $firstRecord = null;
+    public $lastRecord = null;
+    public $differences = [];
     public bool $hasError = false;
     public string $errorMessage = '';
     
     public function mount(): void
     {
-        $base_id = Request::query('base_id');
-        $target_id = Request::query('target_id');
+        $idsParam = Request::query('ids');
         
-        if (!$base_id || !$target_id) {
+        if (!$idsParam) {
             $this->hasError = true;
             $this->errorMessage = '缺少必要的评估记录ID参数';
             return;
         }
         
-        $this->baseAssessment = PhysicalAssessment::find($base_id);
-        $this->targetAssessment = PhysicalAssessment::find($target_id);
+        $idsArray = explode(',', $idsParam);
+        $idsArray = array_filter(array_map('intval', $idsArray));
         
-        if (!$this->baseAssessment || !$this->targetAssessment) {
+        if (empty($idsArray) || count($idsArray) < 2) {
+            $this->hasError = true;
+            $this->errorMessage = '至少需要2条记录进行对比';
+            return;
+        }
+        
+        if (count($idsArray) > 5) {
+            $this->hasError = true;
+            $this->errorMessage = '最多仅支持5条记录对比';
+            return;
+        }
+        
+        $this->records = PhysicalAssessment::whereIn('id', $idsArray)
+            ->orderBy('assessment_date', 'asc')
+            ->get();
+        
+        if ($this->records->isEmpty()) {
             $this->hasError = true;
             $this->errorMessage = '找不到指定的评估记录';
             return;
         }
         
-        if ($this->baseAssessment->patient_profile_id !== $this->targetAssessment->patient_profile_id) {
+        $patientIds = $this->records->pluck('patient_profile_id')->unique();
+        if ($patientIds->count() > 1) {
             $this->hasError = true;
             $this->errorMessage = '只能对比同一客户的评估记录';
             return;
         }
+        
+        $this->firstRecord = $this->records->first();
+        $this->lastRecord = $this->records->last();
         
         $this->differences = $this->calculateDifferences();
     }
     
     protected function calculateDifferences(): array
     {
-        $base = $this->baseAssessment;
-        $target = $this->targetAssessment;
+        $first = $this->firstRecord;
+        $last = $this->lastRecord;
         
         $differences = [
             'basic' => [],
             'circumference' => [],
             'flexibility' => [],
             'posture_side' => [],
-            'posture_back' => []
+            'posture_back' => [],
         ];
         
         $basicFields = ['height', 'weight', 'bmi', 'body_fat_rate'];
         foreach ($basicFields as $field) {
-            $baseVal = $base->$field ?? 0;
-            $targetVal = $target->$field ?? 0;
+            $firstVal = $first->$field ?? 0;
+            $lastVal = $last->$field ?? 0;
             $differences['basic'][$field] = [
-                'base' => $baseVal,
-                'target' => $targetVal,
-                'delta' => $targetVal - $baseVal
+                'first' => $firstVal,
+                'last' => $lastVal,
+                'delta' => $lastVal - $firstVal,
+                'type' => 'numeric',
             ];
         }
         
         $circumferenceFields = ['chest', 'waist', 'hip', 'left_arm', 'right_arm', 'left_thigh', 'right_thigh'];
         foreach ($circumferenceFields as $field) {
-            $baseVal = $base->circumference[$field] ?? 0;
-            $targetVal = $target->circumference[$field] ?? 0;
+            $firstVal = $first->circumference[$field] ?? 0;
+            $lastVal = $last->circumference[$field] ?? 0;
             $differences['circumference'][$field] = [
-                'base' => $baseVal,
-                'target' => $targetVal,
-                'delta' => $targetVal - $baseVal
+                'first' => $firstVal,
+                'last' => $lastVal,
+                'delta' => $lastVal - $firstVal,
+                'type' => 'numeric',
             ];
         }
         
         $flexibilityFields = ['trunk', 'hamstrings', 'iliopsoas', 'quadriceps', 'calf', 'shoulder_1', 'shoulder_2'];
         foreach ($flexibilityFields as $field) {
-            $baseVal = $base->flexibility[$field] ?? null;
-            $targetVal = $target->flexibility[$field] ?? null;
+            $firstVal = $first->flexibility[$field] ?? null;
+            $lastVal = $last->flexibility[$field] ?? null;
             $differences['flexibility'][$field] = [
-                'base' => $baseVal,
-                'target' => $targetVal,
-                'changed' => $baseVal !== $targetVal
+                'first' => $firstVal,
+                'last' => $lastVal,
+                'changed' => $firstVal !== $lastVal,
+                'type' => 'qualitative',
             ];
         }
         
         $postureSideFields = ['side_head', 'side_cervical', 'side_scapula', 'side_thoracic', 'side_lumbar', 'side_pelvis', 'side_knee'];
         foreach ($postureSideFields as $field) {
-            $baseVal = $base->posture_tags[$field] ?? [];
-            $targetVal = $target->posture_tags[$field] ?? [];
-            sort($baseVal);
-            sort($targetVal);
+            $firstVal = $first->posture_tags[$field] ?? [];
+            $lastVal = $last->posture_tags[$field] ?? [];
+            sort($firstVal);
+            sort($lastVal);
             $differences['posture_side'][$field] = [
-                'base' => $baseVal,
-                'target' => $targetVal,
-                'changed' => $baseVal !== $targetVal
+                'first' => $firstVal,
+                'last' => $lastVal,
+                'changed' => $firstVal !== $lastVal,
+                'type' => 'qualitative',
             ];
         }
         
         $postureBackFields = ['back_cervical', 'back_shoulder', 'back_scapula', 'back_thoracolumbar', 'back_pelvis', 'back_knee', 'back_foot'];
         foreach ($postureBackFields as $field) {
-            $baseVal = $base->posture_tags[$field] ?? [];
-            $targetVal = $target->posture_tags[$field] ?? [];
-            sort($baseVal);
-            sort($targetVal);
+            $firstVal = $first->posture_tags[$field] ?? [];
+            $lastVal = $last->posture_tags[$field] ?? [];
+            sort($firstVal);
+            sort($lastVal);
             $differences['posture_back'][$field] = [
-                'base' => $baseVal,
-                'target' => $targetVal,
-                'changed' => $baseVal !== $targetVal
+                'first' => $firstVal,
+                'last' => $lastVal,
+                'changed' => $firstVal !== $lastVal,
+                'type' => 'qualitative',
             ];
         }
         
