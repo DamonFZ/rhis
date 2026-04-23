@@ -19,20 +19,20 @@
                 <div class="flex gap-2">
                     <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2-2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
                         </svg>
                         打印报告
                     </button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+            <div class="overflow-x-auto w-full bg-white rounded-lg shadow border border-gray-200">
                 <div class="min-w-full divide-y divide-gray-200">
                     {{-- 日期行 --}}
                     <div class="flex">
                         <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50"></div>
                         @foreach ($records as $record)
-                            <div class="flex-1 min-w-64 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
                                 <div class="font-bold text-gray-800">{{ $record->treatment_date->format('Y-m-d') }}</div>
                                 <div class="text-sm text-gray-600">{{ $this->getRecordTypeLabel($record) }}</div>
                             </div>
@@ -49,7 +49,7 @@
                                 @php
                                     $photoUrl = $this->getPhotoUrl($record, $photoKey);
                                 @endphp
-                                <div class="flex-1 min-w-64 p-4 border-r border-gray-200 last:border-r-0">
+                                <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
                                     @if ($photoUrl)
                                         <button 
                                             onclick="openImageModal('{{ $photoUrl }}', '{{ $photoLabel }}')"
@@ -58,12 +58,11 @@
                                             <img 
                                                 src="{{ $photoUrl }}" 
                                                 alt="{{ $photoLabel }}"
-                                                style="height: 300px; width: auto; object-fit: cover;"
-                                                class="mx-auto rounded-lg border border-gray-200 hover:border-blue-500 transition print:max-w-full print:h-auto"
+                                                class="w-full aspect-[3/4] object-cover rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 transition print:max-w-full"
                                             />
                                         </button>
                                     @else
-                                        <div style="height: 300px;" class="w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
+                                        <div class="w-full aspect-[3/4] flex items-center justify-center bg-gray-100 rounded-lg shadow-sm border border-gray-200 text-gray-400">
                                             <span>暂无照片</span>
                                         </div>
                                     @endif
@@ -78,7 +77,7 @@
                             备注
                         </div>
                         @foreach ($records as $record)
-                            <div class="flex-1 min-w-64 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
                                 <div class="text-gray-700 whitespace-pre-wrap">{{ $record->remark ?? '暂无备注' }}</div>
                             </div>
                         @endforeach
@@ -93,12 +92,11 @@
                             @php
                                 $videoUrl = $this->getVideoUrl($record);
                             @endphp
-                            <div class="flex-1 min-w-64 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
                                 @if ($videoUrl)
                                     <video 
                                         src="{{ $videoUrl }}" 
                                         controls 
-                                        style="max-height: 300px;"
                                         class="w-full rounded-lg border border-gray-200 print:max-w-full"
                                     ></video>
                                 @else
