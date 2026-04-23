@@ -51,15 +51,18 @@
                                 @endphp
                                 <div class="flex-1 min-w-64 p-4 border-r border-gray-200 last:border-r-0">
                                     @if ($photoUrl)
-                                        <a href="{{ $photoUrl }}" target="_blank" rel="noopener noreferrer" class="block">
+                                        <button 
+                                            onclick="openImageModal('{{ $photoUrl }}', '{{ $photoLabel }}')"
+                                            class="block w-full cursor-pointer hover:opacity-80 transition"
+                                        >
                                             <img 
                                                 src="{{ $photoUrl }}" 
                                                 alt="{{ $photoLabel }}"
-                                                class="w-full aspect-[3/4] object-cover rounded-lg border border-gray-200 hover:border-blue-500 transition print:max-w-full"
+                                                class="h-[300px] w-auto object-cover mx-auto rounded-lg border border-gray-200 hover:border-blue-500 transition print:max-w-full print:h-auto"
                                             />
-                                        </a>
+                                        </button>
                                     @else
-                                        <div class="w-full aspect-[3/4] flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
+                                        <div class="h-[300px] w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
                                             <span>暂无照片</span>
                                         </div>
                                     @endif
@@ -94,7 +97,7 @@
                                     <video 
                                         src="{{ $videoUrl }}" 
                                         controls 
-                                        class="w-full rounded-lg border border-gray-200 print:max-w-full"
+                                        class="w-full max-h-[300px] rounded-lg border border-gray-200 print:max-w-full"
                                     ></video>
                                 @else
                                     <div class="text-gray-400">暂无视频</div>
@@ -115,4 +118,41 @@
             </a>
         </div>
     </div>
+    
+    {{-- 图片弹窗 --}}
+    <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 print:hidden" onclick="closeImageModal()">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl">&times;</button>
+        <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain" />
+            <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
+        </div>
+    </div>
+    
+    <script>
+        function openImageModal(url, label) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalLabel = document.getElementById('modalLabel');
+            
+            modalImage.src = url;
+            modalLabel.textContent = label;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+        
+        // 按 ESC 键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
 </x-filament-panels::page>
