@@ -323,23 +323,22 @@ class AssessmentsRelationManager extends RelationManager
                         ->color('primary')
                         ->requiresConfirmation()
                         ->modalHeading('对比评估记录')
-                        ->modalDescription('请确保已选中正好 2 条评估记录进行对比。')
+                        ->modalDescription('请选择最多5条评估记录进行对比。')
                         ->action(function ($records) {
                             $records = collect($records);
-                            if ($records->count() !== 2) {
+                            if ($records->count() > 5) {
                                 Notification::make()
-                                    ->title('请选择正好 2 条记录进行对比')
+                                    ->title('最多仅支持5条记录对比')
                                     ->danger()
                                     ->send();
                                 return;
                             }
-                            $ids = $records->pluck('id')->sort()->values()->toArray();
+                            $ids = $records->pluck('id')->join(',');
                             return redirect()->route('filament.admin.pages.compare-assessments', [
-                                'base_id' => $ids[0],
-                                'target_id' => $ids[1],
+                                'ids' => $ids,
                             ]);
                         }),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('assessment_date', 'desc');
