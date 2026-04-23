@@ -101,9 +101,10 @@ class PatientProfileResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // 暂时屏蔽批量删除功能，防止员工误操作
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ])
             ->defaultSort('join_date', 'desc');
     }
