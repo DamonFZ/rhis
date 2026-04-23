@@ -19,7 +19,7 @@
                 <div class="flex gap-2">
                     <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2-2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
                         </svg>
                         打印报告
                     </button>
@@ -58,11 +58,12 @@
                                             <img 
                                                 src="{{ $photoUrl }}" 
                                                 alt="{{ $photoLabel }}"
-                                                class="h-[300px] w-auto object-cover mx-auto rounded-lg border border-gray-200 hover:border-blue-500 transition print:max-w-full print:h-auto"
+                                                style="height: 300px; width: auto; object-fit: cover;"
+                                                class="mx-auto rounded-lg border border-gray-200 hover:border-blue-500 transition print:max-w-full print:h-auto"
                                             />
                                         </button>
                                     @else
-                                        <div class="h-[300px] w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
+                                        <div style="height: 300px;" class="w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
                                             <span>暂无照片</span>
                                         </div>
                                     @endif
@@ -97,7 +98,8 @@
                                     <video 
                                         src="{{ $videoUrl }}" 
                                         controls 
-                                        class="w-full max-h-[300px] rounded-lg border border-gray-200 print:max-w-full"
+                                        style="max-height: 300px;"
+                                        class="w-full rounded-lg border border-gray-200 print:max-w-full"
                                     ></video>
                                 @else
                                     <div class="text-gray-400">暂无视频</div>
