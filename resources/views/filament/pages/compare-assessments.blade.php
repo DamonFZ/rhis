@@ -64,7 +64,7 @@
                                         $delta = $differences['basic'][$key]['delta'] ?? 0;
                                         $hasChange = $delta != 0;
                                     @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $hasChange ? 'font-bold' : '' }}" style="{{ $hasChange ? 'color: #b2c5d5' : '' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $hasChange ? 'font-bold' : '' }}" style="{{ $hasChange ? 'color: #0088fa' : '' }}">
                                         @if ($delta > 0)
                                             &uarr; +{{ number_format(abs($delta), 2) }}
                                         @elseif ($delta < 0)
@@ -119,7 +119,7 @@
                                         $delta = $differences['circumference'][$key]['delta'] ?? 0;
                                         $hasChange = $delta != 0;
                                     @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $hasChange ? 'font-bold' : '' }}" style="{{ $hasChange ? 'color: #b2c5d5' : '' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $hasChange ? 'font-bold' : '' }}" style="{{ $hasChange ? 'color: #0088fa' : '' }}">
                                         @if ($delta > 0)
                                             &uarr; +{{ number_format(abs($delta), 2) }}
                                         @elseif ($delta < 0)
@@ -173,7 +173,7 @@
                                     @php
                                         $changed = $differences['flexibility'][$key]['changed'] ?? false;
                                     @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #b2c5d5' : '' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #0088fa' : '' }}">
                                         {{ $changed ? '有变化' : '无变化' }}
                                     </td>
                                 </tr>
@@ -221,7 +221,7 @@
                                     @php
                                         $changed = $differences['posture_side'][$key]['changed'] ?? false;
                                     @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #b2c5d5' : '' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #0088fa' : '' }}">
                                         {{ $changed ? '有变化' : '无变化' }}
                                     </td>
                                 </tr>
@@ -269,7 +269,7 @@
                                     @php
                                         $changed = $differences['posture_back'][$key]['changed'] ?? false;
                                     @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #b2c5d5' : '' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {{ $changed ? 'font-bold' : '' }}" style="{{ $changed ? 'color: #0088fa' : '' }}">
                                         {{ $changed ? '有变化' : '无变化' }}
                                     </td>
                                 </tr>
