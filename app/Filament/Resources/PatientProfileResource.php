@@ -80,8 +80,7 @@ class PatientProfileResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('latestImagingRecord.treatment_date')
                     ->label('最近康复日期')
-                    ->default('-')
-                    ->date('Y-m-d')
+                    ->formatStateUsing(fn ($state) => $state ? $state->format('Y-m-d') : '-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('join_date')
                     ->label('建档日期')
