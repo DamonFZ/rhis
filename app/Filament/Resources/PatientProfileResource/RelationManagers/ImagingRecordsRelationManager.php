@@ -231,9 +231,19 @@ class ImagingRecordsRelationManager extends RelationManager
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('compare_imaging')
+                        ->label('对比影像')
+                        ->icon('heroicon-o-photo')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            if ($records->count() < 2 || $records->count() > 5) {
+                                \Filament\Notifications\Notification::make()->warning()->title('请选择 2 到 5 条记录进行对比')->send();
+                                return;
+                            }
+                            $ids = $records->pluck('id')->join(',');
+                            return redirect()->to('/admin/compare-imaging?ids=' . $ids);
+                        }),
+                ]),
             ])
             ->defaultSort('treatment_date', 'desc');
     }
