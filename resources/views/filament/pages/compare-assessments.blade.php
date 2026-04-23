@@ -160,6 +160,84 @@
                         </table>
                     </div>
                 </div>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">体态评估-侧面对比</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">变化</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @php
+                                    $postureSideLabels = [
+                                        'side_head' => '头部',
+                                        'side_cervical' => '颈椎',
+                                        'side_scapula' => '肩胛骨',
+                                        'side_thoracic' => '胸椎',
+                                        'side_lumbar' => '腰椎',
+                                        'side_pelvis' => '骨盆',
+                                        'side_knee' => '膝关节'
+                                    ];
+                                @endphp
+                                @foreach ($differences['posture_side'] as $key => $data)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $postureSideLabels[$key] ?? $key }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ? implode(', ', $data['base']) : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ? implode(', ', $data['target']) : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['changed'] ? 'text-yellow-600' : 'text-gray-400' }}">
+                                            {{ $data['changed'] ? '✓ 有变化' : '无变化' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">体态评估-背面对比</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部位</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #1</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评估 #2</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">变化</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @php
+                                    $postureBackLabels = [
+                                        'back_cervical' => '颈椎',
+                                        'back_shoulder' => '肩部',
+                                        'back_scapula' => '肩胛骨',
+                                        'back_thoracolumbar' => '胸腰椎',
+                                        'back_pelvis' => '骨盆',
+                                        'back_knee' => '膝关节',
+                                        'back_foot' => '足弓'
+                                    ];
+                                @endphp
+                                @foreach ($differences['posture_back'] as $key => $data)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $postureBackLabels[$key] ?? $key }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['base'] ? implode(', ', $data['base']) : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $data['target'] ? implode(', ', $data['target']) : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $data['changed'] ? 'text-yellow-600' : 'text-gray-400' }}">
+                                            {{ $data['changed'] ? '✓ 有变化' : '无变化' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             @endif
         @endif
         

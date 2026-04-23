@@ -60,7 +60,8 @@ class CompareAssessments extends Page
             'basic' => [],
             'circumference' => [],
             'flexibility' => [],
-            'posture' => []
+            'posture_side' => [],
+            'posture_back' => []
         ];
         
         $basicFields = ['height', 'weight', 'bmi', 'body_fat_rate'];
@@ -90,6 +91,32 @@ class CompareAssessments extends Page
             $baseVal = $base->flexibility[$field] ?? null;
             $targetVal = $target->flexibility[$field] ?? null;
             $differences['flexibility'][$field] = [
+                'base' => $baseVal,
+                'target' => $targetVal,
+                'changed' => $baseVal !== $targetVal
+            ];
+        }
+        
+        $postureSideFields = ['side_head', 'side_cervical', 'side_scapula', 'side_thoracic', 'side_lumbar', 'side_pelvis', 'side_knee'];
+        foreach ($postureSideFields as $field) {
+            $baseVal = $base->posture_tags[$field] ?? [];
+            $targetVal = $target->posture_tags[$field] ?? [];
+            sort($baseVal);
+            sort($targetVal);
+            $differences['posture_side'][$field] = [
+                'base' => $baseVal,
+                'target' => $targetVal,
+                'changed' => $baseVal !== $targetVal
+            ];
+        }
+        
+        $postureBackFields = ['back_cervical', 'back_shoulder', 'back_scapula', 'back_thoracolumbar', 'back_pelvis', 'back_knee', 'back_foot'];
+        foreach ($postureBackFields as $field) {
+            $baseVal = $base->posture_tags[$field] ?? [];
+            $targetVal = $target->posture_tags[$field] ?? [];
+            sort($baseVal);
+            sort($targetVal);
+            $differences['posture_back'][$field] = [
                 'base' => $baseVal,
                 'target' => $targetVal,
                 'changed' => $baseVal !== $targetVal
