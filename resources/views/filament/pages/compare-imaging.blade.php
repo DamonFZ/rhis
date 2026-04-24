@@ -121,7 +121,7 @@
     <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 print:hidden" onclick="closeImageModal()">
         <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl z-10">&times;</button>
         <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
-            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain" />
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain" mode="aspectFit" />
             <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
         </div>
     </div>
