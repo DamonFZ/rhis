@@ -32,7 +32,7 @@
                     <div class="flex">
                         <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50"></div>
                         @foreach ($records as $record)
-                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
                                 <div class="font-bold text-gray-800">{{ $record->treatment_date->format('Y-m-d') }}</div>
                                 <div class="text-sm text-gray-600">{{ $this->getRecordTypeLabel($record) }}</div>
                             </div>
@@ -49,20 +49,17 @@
                                 @php
                                     $photoUrl = $this->getPhotoUrl($record, $photoKey);
                                 @endphp
-                                <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
+                                <div class="p-2 min-w-[240px] md:min-w-[280px] align-top border-r border-gray-200 last:border-r-0">
                                     @if ($photoUrl)
-                                        <button 
-                                            onclick="openImageModal('{{ $photoUrl }}', '{{ $photoLabel }}')"
-                                            class="block w-full cursor-pointer hover:opacity-80 transition"
-                                        >
-                                            <img 
-                                                src="{{ $photoUrl }}" 
-                                                alt="{{ $photoLabel }}"
-                                                class="w-full aspect-[3/4] object-cover rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 transition print:max-w-full"
-                                            />
-                                        </button>
+                                        <a href="{{ $photoUrl }}" 
+                                           target="_blank" 
+                                           class="block relative w-full aspect-[3/4] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:ring-2 hover:ring-primary-500 transition-all">
+                                            <img src="{{ $photoUrl }}" 
+                                                 class="absolute inset-0 w-full h-full object-contain p-2" 
+                                                 alt="康复影像">
+                                        </a>
                                     @else
-                                        <div class="w-full aspect-[3/4] flex items-center justify-center bg-gray-100 rounded-lg shadow-sm border border-gray-200 text-gray-400">
+                                        <div class="w-full aspect-[3/4] flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
                                             <span>暂无照片</span>
                                         </div>
                                     @endif
@@ -77,7 +74,7 @@
                             备注
                         </div>
                         @foreach ($records as $record)
-                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
                                 <div class="text-gray-700 whitespace-pre-wrap">{{ $record->remark ?? '暂无备注' }}</div>
                             </div>
                         @endforeach
@@ -92,7 +89,7 @@
                             @php
                                 $videoUrl = $this->getVideoUrl($record);
                             @endphp
-                            <div class="flex-1 min-w-[200px] md:min-w-[240px] p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
                                 @if ($videoUrl)
                                     <video 
                                         src="{{ $videoUrl }}" 
@@ -118,41 +115,4 @@
             </a>
         </div>
     </div>
-    
-    {{-- 图片弹窗 --}}
-    <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 print:hidden" onclick="closeImageModal()">
-        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl">&times;</button>
-        <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
-            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain" />
-            <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
-        </div>
-    </div>
-    
-    <script>
-        function openImageModal(url, label) {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            const modalLabel = document.getElementById('modalLabel');
-            
-            modalImage.src = url;
-            modalLabel.textContent = label;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeImageModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-        
-        // 按 ESC 键关闭弹窗
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeImageModal();
-            }
-        });
-    </script>
 </x-filament-panels::page>
