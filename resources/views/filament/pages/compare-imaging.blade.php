@@ -118,14 +118,17 @@
     </div>
     
     {{-- 图片模态框 --}}
-    <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-4 print:hidden" onclick="closeImageModal()">
-        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 p-4 md:p-8 print:hidden" onclick="closeImageModal()">
+        <button onclick="closeImageModal()" class="absolute top-6 right-6 text-white/70 hover:text-white z-[110]">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
         
-        <img id="modalImage" src="" alt="放大预览" class="max-w-full max-h-[90vh] object-contain mx-auto" onclick="event.stopPropagation()" />
+        <div class="relative w-full h-full flex items-center justify-center">
+            <img id="modalImage" src="" alt="查看大图" class="block max-w-full max-h-full w-auto h-auto object-contain shadow-2xl" onclick="event.stopPropagation()" />
+        </div>
+        
         <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
     </div>
     
