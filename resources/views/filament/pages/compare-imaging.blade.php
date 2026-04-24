@@ -30,7 +30,7 @@
                 <div class="min-w-full divide-y divide-gray-200">
                     {{-- 日期行 --}}
                     <div class="flex">
-                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800">日期</div>
+                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">日期</div>
                         @foreach ($records as $record)
                             <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 <div class="font-bold text-gray-800">{{ $record->treatment_date->format('Y-m-d') }}</div>
@@ -42,7 +42,7 @@
                     {{-- 照片行 --}}
                     @foreach ($photoLabels as $photoKey => $photoLabel)
                         <div class="flex">
-                            <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800">
+                            <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">
                                 {{ $photoLabel }}
                             </div>
                             @foreach ($records as $record)
@@ -72,7 +72,7 @@
                     
                     {{-- 备注行 --}}
                     <div class="flex">
-                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800">
+                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">
                             备注
                         </div>
                         @foreach ($records as $record)
@@ -84,7 +84,7 @@
                     
                     {{-- 视频行 --}}
                     <div class="flex">
-                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800">
+                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">
                             动态视频
                         </div>
                         @foreach ($records as $record)
