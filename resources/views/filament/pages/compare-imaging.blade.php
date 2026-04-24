@@ -118,18 +118,22 @@
     </div>
     
     {{-- 图片模态框 --}}
-    <div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 p-4 md:p-8 print:hidden" onclick="closeImageModal()">
-        <button onclick="closeImageModal()" class="absolute top-6 right-6 text-white/70 hover:text-white z-[110]">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+    <div id="imageModal" 
+         class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 p-4 print:hidden" 
+         style="display: none;" 
+         onclick="closeImageModal()">
+        
+        <button onclick="closeImageModal()" class="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-[100000]">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
         
-        <div class="relative w-full h-full flex items-center justify-center">
-            <img id="modalImage" src="" alt="查看大图" class="block max-w-full max-h-full w-auto h-auto object-contain shadow-2xl" onclick="event.stopPropagation()" />
-        </div>
+        <img id="modalImage" 
+             src="" 
+             alt="康复影像大图" 
+             class="block max-w-[95vw] max-h-[95vh] w-auto h-auto object-contain shadow-2xl rounded-sm" 
+             onclick="event.stopPropagation()">
         
-        <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
+        <div id="modalLabel" class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/70 text-white px-6 py-2 rounded-full text-sm tracking-widest backdrop-blur-sm"></div>
     </div>
     
     <script>
@@ -140,19 +144,16 @@
             
             modalImage.src = url;
             modalLabel.textContent = label;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
         
         function closeImageModal() {
             const modal = document.getElementById('imageModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            modal.style.display = 'none';
             document.body.style.overflow = '';
         }
         
-        // 按 ESC 键关闭模态框
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeImageModal();
