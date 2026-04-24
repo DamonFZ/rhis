@@ -30,7 +30,7 @@
                 <div class="min-w-full divide-y divide-gray-200">
                     {{-- 日期行 --}}
                     <div class="flex">
-                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50"></div>
+                        <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800">日期</div>
                         @foreach ($records as $record)
                             <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 <div class="font-bold text-gray-800">{{ $record->treatment_date->format('Y-m-d') }}</div>
