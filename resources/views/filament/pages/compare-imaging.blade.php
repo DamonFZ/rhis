@@ -32,7 +32,7 @@
                     <div class="flex">
                         <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50"></div>
                         @foreach ($records as $record)
-                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 <div class="font-bold text-gray-800">{{ $record->treatment_date->format('Y-m-d') }}</div>
                                 <div class="text-sm text-gray-600">{{ $this->getRecordTypeLabel($record) }}</div>
                             </div>
@@ -49,17 +49,19 @@
                                 @php
                                     $photoUrl = $this->getPhotoUrl($record, $photoKey);
                                 @endphp
-                                <div class="p-2 min-w-[240px] md:min-w-[280px] align-top border-r border-gray-200 last:border-r-0">
+                                <div class="p-2 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                     @if ($photoUrl)
-                                        <a href="{{ $photoUrl }}" 
-                                           target="_blank" 
-                                           class="block relative w-full aspect-[3/4] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:ring-2 hover:ring-primary-500 transition-all">
-                                            <img src="{{ $photoUrl }}" 
-                                                 class="absolute inset-0 w-full h-full object-contain p-2" 
-                                                 alt="康复影像">
-                                        </a>
+                                        <div class="w-full" style="aspect-ratio: 3/4;">
+                                            <a href="{{ $photoUrl }}" 
+                                               target="_blank" 
+                                               class="block relative w-full h-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:ring-2 hover:ring-primary-500 transition-all">
+                                                <img src="{{ $photoUrl }}" 
+                                                     class="absolute inset-0 w-full h-full object-contain p-2" 
+                                                     alt="康复影像">
+                                            </a>
+                                        </div>
                                     @else
-                                        <div class="w-full aspect-[3/4] flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
+                                        <div class="w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400" style="aspect-ratio: 3/4;">
                                             <span>暂无照片</span>
                                         </div>
                                     @endif
@@ -74,7 +76,7 @@
                             备注
                         </div>
                         @foreach ($records as $record)
-                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 <div class="text-gray-700 whitespace-pre-wrap">{{ $record->remark ?? '暂无备注' }}</div>
                             </div>
                         @endforeach
@@ -89,7 +91,7 @@
                             @php
                                 $videoUrl = $this->getVideoUrl($record);
                             @endphp
-                            <div class="flex-1 p-4 border-r border-gray-200 last:border-r-0">
+                            <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 @if ($videoUrl)
                                     <video 
                                         src="{{ $videoUrl }}" 
