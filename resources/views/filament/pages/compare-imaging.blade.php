@@ -19,7 +19,7 @@
                 <div class="flex gap-2">
                     <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2V6a2 2 0 012-2h6a2 2 0 012 2zm11-15v4a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2V6a2 2 0 001-2h6a2 2 0 002 2z"></path>
                         </svg>
                         打印报告
                     </button>
@@ -52,13 +52,12 @@
                                 <div class="p-2 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                     @if ($photoUrl)
                                         <div class="w-full" style="aspect-ratio: 3/4;">
-                                            <a href="{{ $photoUrl }}" 
-                                               target="_blank" 
-                                               class="block relative w-full h-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:ring-2 hover:ring-primary-500 transition-all">
+                                            <button onclick="openImageModal('{{ $photoUrl }}', '{{ $photoLabel }}')" 
+                                                    class="block relative w-full h-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:ring-2 hover:ring-primary-500 transition-all">
                                                 <img src="{{ $photoUrl }}" 
                                                      class="absolute inset-0 w-full h-full object-contain p-2" 
                                                      alt="康复影像">
-                                            </a>
+                                            </button>
                                         </div>
                                     @else
                                         <div class="w-full flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400" style="aspect-ratio: 3/4;">
@@ -117,4 +116,41 @@
             </a>
         </div>
     </div>
+    
+    {{-- 图片模态框 --}}
+    <div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 print:hidden" onclick="closeImageModal()">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl z-10">&times;</button>
+        <div class="relative max-w-[90vw] max-h-[90vh]" onclick="event.stopPropagation()">
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain" />
+            <div id="modalLabel" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded"></div>
+        </div>
+    </div>
+    
+    <script>
+        function openImageModal(url, label) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalLabel = document.getElementById('modalLabel');
+            
+            modalImage.src = url;
+            modalLabel.textContent = label;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+        
+        // 按 ESC 键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
 </x-filament-panels::page>
