@@ -124,18 +124,18 @@
 
         <template x-teleport="body"> 
             <div x-show="isModalOpen" 
-                 class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/95 p-4 md:p-8" 
+                 class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8" 
                  style="display: none;" 
                  x-transition.opacity.duration.300ms 
                  @click="isModalOpen = false" 
                  x-cloak>
                 
-                <button class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition-all z-[1000000]">
+                    <svg class="w-12 h-12 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
 
                 <img :src="modalImageUrl" 
-                     class="block object-contain shadow-2xl rounded" 
+                     class="block object-contain rounded-lg shadow-2xl ring-1 ring-white/10" 
                      style="max-width: 95vw; max-height: 95vh; width: auto; height: auto;" 
                      alt="全屏预览" 
                      @click.stop>
