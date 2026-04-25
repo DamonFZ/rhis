@@ -364,21 +364,54 @@
 | 本月服务人次 | ✅ 已完成 | 统计本月内产生划扣的去重客户数，用户群图标 |
 | 累计服务总次数 | ✅ 已完成 | 统计系统所有划扣记录总数，文档勾选图标 |
 | 待处理预警 | ✅ 已完成 | 余额不足3次或超30天未到店，警示三角图标 |
+| 待唤醒客户 | ✅ 已完成 | 30天未到店但有余额的客户，危险色 |
+| 客户复购率 | ✅ 已完成 | 购买过2个及以上套餐的客户占比，灰色/绿色 |
+| 最受欢迎项目 | ✅ 已完成 | 订单量最多的套餐名称，黄色火焰图标 |
+| 卡片布局 | ✅ 已完成 | 每行3个卡片布局 |
 | 顶部优先展示 | ✅ 已完成 | sort=1 确保在 Dashboard 最上方 |
 
 **统计卡片详细说明：**
 
 | 卡片 | 统计逻辑 | 涉及表字段 | 颜色/图标 |
 |------|----------|------------|-----------|
-| **总销售额** | `PatientPackage::sum('price')` | `patient_packages.price` | 绿色，heroicon-m-banknotes |
-| **本月销售额** | 本月 `purchase_date` 的套餐总价，与上月对比 | `patient_packages.purchase_date`, `patient_packages.price` | 绿色/红色，heroicon-m-currency-dollar |
-| **本月服务产值** | SUM(单次均价 * 扣减次数)：`ConsumptionRecord` 关联 `PatientPackage` | `consumption_records.treatment_date`, `patient_packages.average_price`, `consumption_records.deducted_sessions` | 蓝色，heroicon-m-sparkles |
-| **本月服务人次** | 本月 `treatment_date` 的去重客户数 | `consumption_records.treatment_date`, `consumption_records.patient_profile_id` | 信息色，heroicon-m-users |
-| **累计服务总次数** | `ConsumptionRecord::sum('deducted_sessions')` | `consumption_records.deducted_sessions` | 警告色，heroicon-m-clipboard-document-check |
-| **待处理预警** | 余额≤3次 OR 30天内无划扣的活跃套餐 | `patient_packages.status`, `patient_packages.remaining_sessions`, `consumption_records.treatment_date` | 危险色，heroicon-m-exclamation-triangle |
+| **总销售额** | `PatientPackage::sum('price')` | `patient_packages.price` | 绿色，heroicon-o-banknotes |
+| **本月销售额** | 本月 `purchase_date` 的套餐总价，与上月对比 | `patient_packages.purchase_date`, `patient_packages.price` | 绿色/红色，heroicon-o-currency-dollar |
+| **本月服务产值** | SUM(单次均价 × 扣减次数)：`ConsumptionRecord` 关联 `PatientPackage` | `consumption_records.treatment_date`, `patient_packages.average_price`, `consumption_records.deducted_sessions` | 蓝色，heroicon-o-sparkles |
+| **本月服务人次** | 本月 `treatment_date` 的去重客户数 | `consumption_records.treatment_date`, `consumption_records.patient_profile_id` | 信息色，heroicon-o-users |
+| **累计服务总次数** | `ConsumptionRecord::sum('deducted_sessions')` | `consumption_records.deducted_sessions` | 警告色，heroicon-o-clipboard-document-check |
+| **待处理预警** | 余额≤3次 OR 30天内无划扣的活跃套餐 | `patient_packages.status`, `patient_packages.remaining_sessions`, `consumption_records.treatment_date` | 危险色，heroicon-o-exclamation-triangle |
+| **待唤醒客户（30天未到店）** | 活跃、有余额且30天无划扣 | `patient_packages.status`, `patient_packages.remaining_sessions`, `consumption_records.treatment_date` | 危险色，heroicon-o-exclamation-triangle |
+| **客户复购率** | (购买≥2个套餐的客户数 / 总成交客户数) × 100% | `patient_profiles.id`, `patient_packages.patient_profile_id` | >20%绿色否则灰色，heroicon-o-arrow-path |
+| **最受欢迎项目** | 订单量最多的套餐名称 | `patient_packages.package_name` | 警告色，heroicon-o-fire |
+
+**待唤醒客户查询逻辑：**
+1. 筛选条件 1：`status = 'active'`（套餐有效）
+2. 筛选条件 2：`remaining_sessions > 0`（有余额）
+3. 筛选条件 3：`whereDoesntHave('consumptionRecords')` + 子查询 `treatment_date >= 30天前`（最近30天无划扣）
+4. 合并以上条件，统计记录数
+
+---
+
+### 6.2 月度销售额趋势图表
+
+**功能描述：** 展示过去12个月的月度销售额趋势折线图。
+
+| 功能点 | 状态 | 说明 |
+| ------ | ---- | ---- |
+| 月度销售额趋势 | ✅ 已完成 | 展示过去12个月的销售额趋势 |
+| 折线图 | ✅ 已完成 | 使用 line chart 类型，橙色主题 |
+| 缺失月份填充 | ✅ 已完成 | 自动填充数据为0的月份 |
+| 排序展示 | ✅ 已完成 | sort=2 显示在统计卡片下方 |
+
+**图表配置：**
+- 类型：Line Chart（折线图）
+- 数据范围：过去12个月
+- 颜色：橙色主题 `#f59e0b`
+- 样式：平滑曲线，填充背景
 
 **文件位置：**
 - `app/Filament/Widgets/DashboardStatsOverview.php`
+- `app/Filament/Widgets/RevenueChart.php`
 
 ---
 
