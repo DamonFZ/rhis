@@ -86,11 +86,11 @@ class ConsumptionRecordsRelationManager extends RelationManager
     protected function handleRecordCreation(array $data): ConsumptionRecord
     {
         return DB::transaction(function () use ($data) {
-            // 1. 创建划扣记录
+            // 1. 创建划扣记录前先移除 employee_ids
             $employeeIds = $data['employee_ids'] ?? [];
-            unset($data['employee_ids']);
+            $filteredData = collect($data)->except('employee_ids')->toArray();
             
-            $record = ConsumptionRecord::create($data);
+            $record = ConsumptionRecord::create($filteredData);
             
             // 2. 计算提成
             if ($record->patient_package_id) {
@@ -121,10 +121,11 @@ class ConsumptionRecordsRelationManager extends RelationManager
     protected function handleRecordUpdate(ConsumptionRecord $record, array $data): ConsumptionRecord
     {
         return DB::transaction(function () use ($record, $data) {
+            // 1. 更新记录前先移除 employee_ids
             $employeeIds = $data['employee_ids'] ?? [];
-            unset($data['employee_ids']);
+            $filteredData = collect($data)->except('employee_ids')->toArray();
             
-            $record->update($data);
+            $record->update($filteredData);
             
             // 重新计算提成
             if ($record->patient_package_id) {
