@@ -37,8 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // 移除默认的 AccountWidget 和 FilamentInfoWidget
             ])
             ->middleware([
                 EncryptCookies::class,
