@@ -44,7 +44,8 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->options(User::pluck('name', 'id'))
                     ->searchable()
                     ->required()
-                    ->helperText('提成将在选中的员工间平分'),
+                    ->helperText('提成将在选中的员工间平分')
+                    ->dehydrated(false),
                 Forms\Components\TextInput::make('deducted_sessions')
                     ->label('扣减次数')
                     ->numeric()
@@ -86,11 +87,11 @@ class ConsumptionRecordsRelationManager extends RelationManager
     protected function handleRecordCreation(array $data): ConsumptionRecord
     {
         return DB::transaction(function () use ($data) {
-            // 1. 创建划扣记录前先移除 employee_ids
+            // 1. 创建划扣记录
             $employeeIds = $data['employee_ids'] ?? [];
-            $filteredData = collect($data)->except('employee_ids')->toArray();
+            unset($data['employee_ids']);
             
-            $record = ConsumptionRecord::create($filteredData);
+            $record = ConsumptionRecord::create($data);
             
             // 2. 计算提成
             if ($record->patient_package_id) {
@@ -121,11 +122,10 @@ class ConsumptionRecordsRelationManager extends RelationManager
     protected function handleRecordUpdate(ConsumptionRecord $record, array $data): ConsumptionRecord
     {
         return DB::transaction(function () use ($record, $data) {
-            // 1. 更新记录前先移除 employee_ids
             $employeeIds = $data['employee_ids'] ?? [];
-            $filteredData = collect($data)->except('employee_ids')->toArray();
+            unset($data['employee_ids']);
             
-            $record->update($filteredData);
+            $record->update($data);
             
             // 重新计算提成
             if ($record->patient_package_id) {
