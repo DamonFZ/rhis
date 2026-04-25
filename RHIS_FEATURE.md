@@ -354,19 +354,28 @@
 
 ### 6.1 核心指标统计卡片
 
-**功能描述：** 在系统首页展示机构运营核心指标的统计卡片，直观展示健康度。
+**功能描述：** 在系统首页展示机构运营核心指标的统计卡片，直观展示健康度和经营分析数据。
 
 | 功能点 | 状态 | 说明 |
 | ------ | ---- | ---- |
-| 总客户数统计 | ✅ 已完成 | 统计 PatientProfile 总记录数，绿色向上趋势，用户图标 |
-| 进行中的套餐数 | ✅ 已完成 | 统计 PatientPackage 中 status='active' 的数量，蓝色图标 |
-| 本月新增客户数 | ✅ 已完成 | 统计本月内新增客户数，附带折线图表 |
+| 总销售额统计 | ✅ 已完成 | 统计所有客户套餐包的总价，钞票图标 |
+| 本月销售额统计 | ✅ 已完成 | 统计本月新增订单金额，与上月对比，美元图标 |
+| 本月服务产值 | ✅ 已完成 | 计算本月实际服务产生的价值，星光图标 |
+| 本月服务人次 | ✅ 已完成 | 统计本月内产生划扣的去重客户数，用户群图标 |
+| 累计服务总次数 | ✅ 已完成 | 统计系统所有划扣记录总数，文档勾选图标 |
+| 待处理预警 | ✅ 已完成 | 余额不足3次或超30天未到店，警示三角图标 |
 | 顶部优先展示 | ✅ 已完成 | sort=1 确保在 Dashboard 最上方 |
 
-**统计卡片：**
-- **卡片一：总客户数** - 统计 `PatientProfile::count()`，绿色成功色，用户图标，描述"持续增长中"
-- **卡片二：进行中的套餐** - 统计 `PatientPackage::where('status', 'active')->count()`，蓝色主色，文档列表图标
-- **卡片三：本月新增客户** - 统计本月创建的客户数，信息色，图表图标，附带模拟折线图 [7, 2, 10, 3, 15, 4, 17]
+**统计卡片详细说明：**
+
+| 卡片 | 统计逻辑 | 涉及表字段 | 颜色/图标 |
+|------|----------|------------|-----------|
+| **总销售额** | `PatientPackage::sum('price')` | `patient_packages.price` | 绿色，heroicon-m-banknotes |
+| **本月销售额** | 本月 `purchase_date` 的套餐总价，与上月对比 | `patient_packages.purchase_date`, `patient_packages.price` | 绿色/红色，heroicon-m-currency-dollar |
+| **本月服务产值** | SUM(单次均价 * 扣减次数)：`ConsumptionRecord` 关联 `PatientPackage` | `consumption_records.treatment_date`, `patient_packages.average_price`, `consumption_records.deducted_sessions` | 蓝色，heroicon-m-sparkles |
+| **本月服务人次** | 本月 `treatment_date` 的去重客户数 | `consumption_records.treatment_date`, `consumption_records.patient_profile_id` | 信息色，heroicon-m-users |
+| **累计服务总次数** | `ConsumptionRecord::sum('deducted_sessions')` | `consumption_records.deducted_sessions` | 警告色，heroicon-m-clipboard-document-check |
+| **待处理预警** | 余额≤3次 OR 30天内无划扣的活跃套餐 | `patient_packages.status`, `patient_packages.remaining_sessions`, `consumption_records.treatment_date` | 危险色，heroicon-m-exclamation-triangle |
 
 **文件位置：**
 - `app/Filament/Widgets/DashboardStatsOverview.php`
