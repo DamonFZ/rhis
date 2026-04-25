@@ -5,11 +5,13 @@ namespace App\Filament\Resources\PatientProfileResource\RelationManagers;
 use App\Models\ConsumptionRecord;
 use App\Models\PatientPackage;
 use App\Models\RehabPackage;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ConsumptionRecordsRelationManager extends RelationManager
@@ -36,6 +38,13 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->searchable()
                     ->required()
                     ->reactive(),
+                Forms\Components\Select::make('employee_ids')
+                    ->label('服务员工（可多选）')
+                    ->multiple()
+                    ->options(User::pluck('name', 'id'))
+                    ->searchable()
+                    ->required()
+                    ->helperText('提成将在选中的员工间平分'),
                 Forms\Components\TextInput::make('deducted_sessions')
                     ->label('扣减次数')
                     ->numeric()
@@ -74,6 +83,83 @@ class ConsumptionRecordsRelationManager extends RelationManager
             ]);
     }
 
+    protected function handleRecordCreation(array $data): ConsumptionRecord
+    {
+        return DB::transaction(function () use ($data) {
+            // 1. 创建划扣记录
+            $employeeIds = $data['employee_ids'] ?? [];
+            unset($data['employee_ids']);
+            
+            $record = ConsumptionRecord::create($data);
+            
+            // 2. 计算提成
+            if ($record->patient_package_id) {
+                $patientPackage = $record->patientPackage;
+                $deductedSessions = $record->deducted_sessions;
+                
+                // 通过套餐编码找到字典表获取提成
+                $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
+                $baseCommission = $rehabPackage ? $rehabPackage->commission_per_service : 0;
+                $totalCommission = $baseCommission * $deductedSessions;
+                
+                // 3. 在员工间平分
+                $employeeCount = count($employeeIds);
+                if ($employeeCount > 0) {
+                    $splitCommission = $totalCommission / $employeeCount;
+                    $syncData = [];
+                    foreach ($employeeIds as $employeeId) {
+                        $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+                    }
+                    $record->employees()->sync($syncData);
+                }
+            }
+            
+            return $record;
+        });
+    }
+
+    protected function handleRecordUpdate(ConsumptionRecord $record, array $data): ConsumptionRecord
+    {
+        return DB::transaction(function () use ($record, $data) {
+            $employeeIds = $data['employee_ids'] ?? [];
+            unset($data['employee_ids']);
+            
+            $record->update($data);
+            
+            // 重新计算提成
+            if ($record->patient_package_id) {
+                $patientPackage = $record->patientPackage;
+                $deductedSessions = $record->deducted_sessions;
+                
+                $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
+                $baseCommission = $rehabPackage ? $rehabPackage->commission_per_service : 0;
+                $totalCommission = $baseCommission * $deductedSessions;
+                
+                $employeeCount = count($employeeIds);
+                if ($employeeCount > 0) {
+                    $splitCommission = $totalCommission / $employeeCount;
+                    $syncData = [];
+                    foreach ($employeeIds as $employeeId) {
+                        $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+                    }
+                    $record->employees()->sync($syncData);
+                } else {
+                    $record->employees()->detach();
+                }
+            }
+            
+            return $record;
+        });
+    }
+
+    protected function fillFormBeforeEditing(Forms\ComponentContainer $form, ConsumptionRecord $record): void
+    {
+        $form->fill([
+            ...$record->attributesToArray(),
+            'employee_ids' => $record->employees()->pluck('user_id')->toArray(),
+        ]);
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -81,6 +167,9 @@ class ConsumptionRecordsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('patientPackage.package_name')
                     ->label('套餐名称')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('employees.name')
+                    ->label('服务员工')
+                    ->listWithLineBreaks(),
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
                     ->date('Y-m-d')

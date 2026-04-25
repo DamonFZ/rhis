@@ -22,6 +22,7 @@ class RehabPackage extends Model
         'is_extendable',
         'extension_days',
         'is_shareable',
+        'commission_per_service',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class RehabPackage extends Model
         'status' => 'boolean',
         'is_extendable' => 'boolean',
         'is_shareable' => 'boolean',
+        'commission_per_service' => 'decimal:2',
     ];
 
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
 use App\Models\PatientPackage;
 
@@ -60,5 +61,12 @@ class ConsumptionRecord extends Model
     public function patientPackage(): BelongsTo
     {
         return $this->belongsTo(PatientPackage::class, 'patient_package_id');
+    }
+
+    public function employees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'consumption_record_user')
+            ->withPivot('commission_amount')
+            ->withTimestamps();
     }
 }

@@ -50,4 +50,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Department::class, 'department_user')
             ->withPivot('is_primary');
     }
+
+    public function consumptionRecords(): BelongsToMany
+    {
+        return $this->belongsToMany(ConsumptionRecord::class, 'consumption_record_user')
+            ->withPivot('commission_amount')
+            ->withTimestamps();
+    }
 }

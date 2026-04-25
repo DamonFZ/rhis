@@ -88,7 +88,11 @@ class RehabPackageResource extends Resource
                 Forms\Components\Toggle::make('is_shareable')
                     ->label('是否可共享')
                     ->default(false),
-
+                Forms\Components\TextInput::make('commission_per_service')
+                    ->label('单次服务提成金额')
+                    ->numeric()
+                    ->prefix('¥')
+                    ->default(0),
             ]);
     }
 

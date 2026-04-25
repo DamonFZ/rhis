@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('consumption_record_user', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('consumption_record_id')->comment('划扣记录ID');
+            $table->unsignedBigInteger('user_id')->comment('员工ID');
+            $table->decimal('commission_amount', 10, 2)->default(0)->comment('分配给该员工的提成金额');
+            $table->timestamps();
+            
+            $table->foreign('consumption_record_id')->references('id')->on('consumption_records')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            
+            $table->index('consumption_record_id');
+            $table->index('user_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('consumption_record_user');
+    }
+};
