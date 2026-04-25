@@ -124,19 +124,22 @@
 
         <template x-teleport="body"> 
             <div x-show="isModalOpen" 
-                 class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8" 
-                 style="display: none;" 
+                 class="fixed inset-0 flex items-center justify-center p-4 md:p-8" 
+                 style="display: none; z-index: 999999; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);" 
                  x-transition.opacity.duration.300ms 
                  @click="isModalOpen = false" 
                  x-cloak>
                 
-                <button class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition-all z-[1000000]">
-                    <svg class="w-12 h-12 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button class="absolute top-6 right-6 text-white transition-transform hover:scale-110" 
+                        style="z-index: 1000000; opacity: 0.7;" 
+                        onmouseover="this.style.opacity='1'" 
+                        onmouseout="this.style.opacity='0.7'">
+                    <svg class="w-12 h-12" style="filter: drop-shadow(0 4px 3px rgba(0,0,0,0.5));" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
 
                 <img :src="modalImageUrl" 
-                     class="block object-contain rounded-lg shadow-2xl ring-1 ring-white/10" 
-                     style="max-width: 95vw; max-height: 95vh; width: auto; height: auto;" 
+                     class="block rounded-lg" 
+                     style="max-width: 95vw; max-height: 95vh; width: auto; height: auto; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); outline: 1px solid rgba(255,255,255,0.15);" 
                      alt="全屏预览" 
                      @click.stop>
             </div>
