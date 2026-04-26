@@ -20,8 +20,6 @@ class EmployeeCommissionReport extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
-    protected static string $view = 'filament.pages.employee-commission-report';
-
     protected static ?string $navigationLabel = '员工提成报表';
 
     protected static ?string $title = '员工月度提成报表';
@@ -56,6 +54,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         return $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
+                            ->withPivot('commission_amount')
                             ->sum('consumption_record_user.commission_amount');
                     }),
                 TextColumn::make('service_count')

@@ -164,13 +164,15 @@ class ConsumptionRecordsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('employees'))
             ->columns([
                 Tables\Columns\TextColumn::make('patientPackage.package_name')
                     ->label('套餐名称')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employees.name')
                     ->label('服务员工')
-                    ->listWithLineBreaks(),
+                    ->listWithLineBreaks()
+                    ->default('-'),
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
                     ->date('Y-m-d')
