@@ -15,6 +15,10 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
+use Filament\Notifications\Notification;
 
 class PatientProfileResource extends Resource
 {
@@ -99,6 +103,42 @@ class PatientProfileResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Action::make('bindWechat')
+                    ->label('微信绑定')
+                    ->icon('heroicon-o-qr-code')
+                    ->color('success')
+                    ->hidden(fn ($record) => filled($record->wechat_openid))
+                    ->modalHeading('绑定微信档案')
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->modalContent(function ($record) {
+                        // 如果没有 token，则生成一个永久 token
+                        if (blank($record->bind_token)) {
+                            $record->update(['bind_token' => Str::random(32)]);
+                        }
+                        // 生成包含 token 的参数链接
+                        $url = route('mobile.bind', [
+                            'patient_id' => $record->id,
+                            'token' => $record->bind_token,
+                        ]);
+
+                        $qrCode = QrCode::size(250)->margin(1)->generate($url);
+
+                        return view('filament.components.qrcode-modal', [
+                            'qrCode' => $qrCode,
+                            'patientName' => $record->name,
+                        ]);
+                    })
+                    ->extraModalActions([
+                        Action::make('resetToken')
+                            ->label('重新生成二维码')
+                            ->color('danger')
+                            ->requiresConfirmation()
+                            ->action(function ($record) {
+                                $record->update(['bind_token' => Str::random(32)]);
+                                Notification::make()->success()->title('已重新生成并作废旧码')->send();
+                            }),
+                    ]),
             ])
             ->bulkActions([
                 // 暂时屏蔽批量删除功能，防止员工误操作

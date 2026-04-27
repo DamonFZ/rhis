@@ -10,12 +10,10 @@ class AuthController extends Controller
 {
     public function bindConfirm(Request $request)
     {
-        // 1. 验证签名（本地环境可暂不严格校验签名，但生产环境必须校验）
-        if (!app()->isLocal() && !$request->hasValidSignature()) {
-            abort(403, '链接已失效或被篡改，请联系前台。');
-        }
-
-        $patient = PatientProfile::findOrFail($request->patient_id);
+        // 校验数据库中的 bind_token 是否匹配 (不再使用 hasValidSignature)
+        $patient = PatientProfile::where('id', $request->patient_id)
+            ->where('bind_token', $request->token)
+            ->firstOrFail();
 
         // 2. 微信授权逻辑 (加入本地开发绕过机制)
         if (app()->isLocal()) {
@@ -53,7 +51,10 @@ class AuthController extends Controller
         }
 
         $patient = PatientProfile::findOrFail($request->patient_id);
-        $patient->update(['wechat_openid' => $openid]);
+        $patient->update([
+            'wechat_openid' => $openid,
+            'bind_token' => null // 绑定成功后立即使二维码失效
+        ]);
 
         session()->forget('wechat_oauth_user');
 
