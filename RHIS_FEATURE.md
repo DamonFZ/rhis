@@ -476,4 +476,32 @@
 
 ---
 
-*最后更新：2026-04-23*
+## Bug修复记录
+
+### 2026-04-26
+1. **修复划扣记录服务员工不显示问题**
+   - 问题：在划扣记录表格中，服务员工列显示为空
+   - 解决：使用`formatStateUsing`方法正确获取并显示关联的员工姓名
+
+2. **修复员工提成报表页面报错**
+   - 问题：访问员工提成报表时出现错误"Typed static property Filament\Pages\BasePage::$view must not be accessed before initialization"
+   - 解决：
+     - 在`EmployeeCommissionReport`类中添加`protected static string $view = 'filament.pages.employee-commission-report';`属性
+     - 创建对应的视图文件`/resources/views/filament/pages/employee-commission-report.blade.php`
+
+3. **修复划扣记录员工关联保存问题（最终、正确的 Filament v3 方案）**
+   - **根本原因：** 在 Filament v3 中，RelationManager 不会触发页面级生命周期钩子（`mutateFormDataBeforeCreate`, `afterCreate` 等），导致员工数据丢失
+   - **中间表：** `consumption_record_user`
+   - **解决方案：**
+     - 删除所有失效的页面级钩子方法
+     - 保留核心计算逻辑 `syncEmployees` 方法
+     - 在 Table Action 级别使用钩子：
+       - **第 151-156 行：** `CreateAction` 使用 `->after()` 钩子，通过 `$form->getRawState()` 获取员工ID
+       - **第 159-168 行：** `EditAction` 使用 `->mutateRecordDataUsing()` 回填数据，和 `->after()` 钩子同步关联
+     - 保持 `employee_ids` 的 `->dehydrated(false)` 配置
+
+4. **修复员工提成报表计算问题**
+   - 问题：提成计算不正确
+   - 解决：优化提成计算逻辑，使用更可靠的方式获取pivot数据
+
+*最后更新：2026-04-26*

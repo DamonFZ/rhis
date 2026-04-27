@@ -11,8 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class ConsumptionRecordsRelationManager extends RelationManager
 {
@@ -21,6 +19,8 @@ class ConsumptionRecordsRelationManager extends RelationManager
     protected static ?string $recordTitleAttribute = 'treatment_date';
 
     protected static ?string $title = '划扣记录';
+
+    public array $tempEmployeeIds = [];
 
     public function form(Form $form): Form
     {
@@ -44,8 +44,8 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->options(User::pluck('name', 'id'))
                     ->searchable()
                     ->required()
-                    ->helperText('提成将在选中的员工间平分')
-                    ->dehydrated(false),
+                    ->helperText('提成将在选中的员工间平分'),
+//                    ->dehydrated(false), // 核心 1：绝对不能少！告诉 Filament 别把它当主表字段保存
                 Forms\Components\TextInput::make('deducted_sessions')
                     ->label('扣减次数')
                     ->numeric()
@@ -71,11 +71,10 @@ class ConsumptionRecordsRelationManager extends RelationManager
                 Forms\Components\Textarea::make('treatment_content')
                     ->label('康复内容')
                     ->columnSpanFull(),
-                // 隐藏字段，由模型逻辑自动设置
                 Forms\Components\Hidden::make('remaining_sessions')
                     ->default(0),
                 Forms\Components\Hidden::make('package_name')
-                    ->default(''), // 由关联自动填充
+                    ->default(''),
                 Forms\Components\Placeholder::make('warning_message')
                     ->label('')
                     ->columnSpanFull()
@@ -84,81 +83,36 @@ class ConsumptionRecordsRelationManager extends RelationManager
             ]);
     }
 
-    protected function handleRecordCreation(array $data): ConsumptionRecord
+    // 核心 2：必须改为 public 方法，让闭包可以无障碍调用
+    public function syncEmployeesLogic(ConsumptionRecord $record, array $employeeIds): void
     {
-        return DB::transaction(function () use ($data) {
-            // 1. 创建划扣记录
-            $employeeIds = $data['employee_ids'] ?? [];
-            unset($data['employee_ids']);
-            
-            $record = ConsumptionRecord::create($data);
-            
-            // 2. 计算提成
-            if ($record->patient_package_id) {
-                $patientPackage = $record->patientPackage;
-                $deductedSessions = $record->deducted_sessions;
-                
-                // 通过套餐编码找到字典表获取提成
-                $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
-                $baseCommission = $rehabPackage ? $rehabPackage->commission_per_service : 0;
-                $totalCommission = $baseCommission * $deductedSessions;
-                
-                // 3. 在员工间平分
-                $employeeCount = count($employeeIds);
-                if ($employeeCount > 0) {
-                    $splitCommission = $totalCommission / $employeeCount;
-                    $syncData = [];
-                    foreach ($employeeIds as $employeeId) {
-                        $syncData[$employeeId] = ['commission_amount' => $splitCommission];
-                    }
-                    $record->employees()->sync($syncData);
-                }
-            }
-            
-            return $record;
-        });
-    }
+        if (empty($employeeIds) || !$record->patient_package_id) {
+            $record->employees()->detach();
+            return;
+        }
 
-    protected function handleRecordUpdate(ConsumptionRecord $record, array $data): ConsumptionRecord
-    {
-        return DB::transaction(function () use ($record, $data) {
-            $employeeIds = $data['employee_ids'] ?? [];
-            unset($data['employee_ids']);
-            
-            $record->update($data);
-            
-            // 重新计算提成
-            if ($record->patient_package_id) {
-                $patientPackage = $record->patientPackage;
-                $deductedSessions = $record->deducted_sessions;
-                
-                $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
-                $baseCommission = $rehabPackage ? $rehabPackage->commission_per_service : 0;
-                $totalCommission = $baseCommission * $deductedSessions;
-                
-                $employeeCount = count($employeeIds);
-                if ($employeeCount > 0) {
-                    $splitCommission = $totalCommission / $employeeCount;
-                    $syncData = [];
-                    foreach ($employeeIds as $employeeId) {
-                        $syncData[$employeeId] = ['commission_amount' => $splitCommission];
-                    }
-                    $record->employees()->sync($syncData);
-                } else {
-                    $record->employees()->detach();
-                }
-            }
-            
-            return $record;
-        });
-    }
+        $patientPackage = PatientPackage::find($record->patient_package_id);
+        if (!$patientPackage) {
+            return;
+        }
 
-    protected function fillFormBeforeEditing(Forms\ComponentContainer $form, ConsumptionRecord $record): void
-    {
-        $form->fill([
-            ...$record->attributesToArray(),
-            'employee_ids' => $record->employees()->pluck('user_id')->toArray(),
-        ]);
+        $deductedSessions = $record->deducted_sessions;
+
+        $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
+        // 增加兜底，防止没有设置基础提成
+        $baseCommission = $rehabPackage ? ($rehabPackage->commission_per_service ?? 0) : 0;
+        $totalCommission = $baseCommission * $deductedSessions;
+
+        $employeeCount = count($employeeIds);
+        if ($employeeCount > 0) {
+            $splitCommission = $totalCommission / $employeeCount;
+            $syncData = [];
+            foreach ($employeeIds as $employeeId) {
+                // 将计算好的金额压入同步数据
+                $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+            }
+            $record->employees()->sync($syncData);
+        }
     }
 
     public function table(Table $table): Table
@@ -169,9 +123,15 @@ class ConsumptionRecordsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('patientPackage.package_name')
                     ->label('套餐名称')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('employees.name')
+                Tables\Columns\TextColumn::make('employees')
                     ->label('服务员工')
-                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        $employees = $record->employees;
+                        if ($employees->isEmpty()) {
+                            return '-';
+                        }
+                        return $employees->pluck('name')->join(', ');
+                    })
                     ->default('-'),
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
@@ -197,16 +157,62 @@ class ConsumptionRecordsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    // 1. 保存前：把员工ID截获到暂存区，并从保存数据中剔除（防止报错）
+                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                        $livewire->tempEmployeeIds = $data['employee_ids'] ?? [];
+                        unset($data['employee_ids']);
+                        return $data;
+                    })
+                    // 2. 保存后：从中转站拿出ID执行提成计算
+                    ->after(function (ConsumptionRecord $record, RelationManager $livewire) {
+                        $livewire->syncEmployeesLogic($record, $livewire->tempEmployeeIds);
+                        $livewire->tempEmployeeIds = []; // 用完清空
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    // 1. 加载编辑表单时：回填之前选中的员工
+                    ->mutateRecordDataUsing(function (ConsumptionRecord $record, array $data): array {
+                        $data['employee_ids'] = $record->employees()->pluck('users.id')->toArray();
+                        return $data;
+                    })
+                    // 2. 保存修改前：截获并剔除
+                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                        $livewire->tempEmployeeIds = $data['employee_ids'] ?? [];
+                        unset($data['employee_ids']);
+                        return $data;
+                    })
+                    // 3. 保存修改后：重新计算并同步
+                    ->after(function (ConsumptionRecord $record, RelationManager $livewire) {
+                        $livewire->syncEmployeesLogic($record, $livewire->tempEmployeeIds);
+                        $livewire->tempEmployeeIds = [];
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ])
+//            ->headerActions([
+//                Tables\Actions\CreateAction::make()
+//                    // 核心 3：利用依赖注入直接抓取表单原生数据
+//                    ->after(function (ConsumptionRecord $record, Forms\Form $form, RelationManager $livewire) {
+//                        $employeeIds = $form->getRawState()['employee_ids'] ?? [];
+//                        $livewire->syncEmployeesLogic($record, $employeeIds);
+//                    }),
+//            ])
+//            ->actions([
+//                Tables\Actions\EditAction::make()
+//                    ->mutateRecordDataUsing(function (ConsumptionRecord $record, array $data): array {
+//                        // 核心 4：编辑页面数据回填
+//                        $data['employee_ids'] = $record->employees()->pluck('users.id')->toArray();
+//                        return $data;
+//                    })
+//                    ->after(function (ConsumptionRecord $record, Forms\Form $form, RelationManager $livewire) {
+//                        $employeeIds = $form->getRawState()['employee_ids'] ?? [];
+//                        $livewire->syncEmployeesLogic($record, $employeeIds);
+//                    }),
+//                Tables\Actions\DeleteAction::make(),
+//            ])
             ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
+                //
             ])
             ->defaultSort('treatment_date', 'desc');
     }

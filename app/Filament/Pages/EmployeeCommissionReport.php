@@ -19,6 +19,8 @@ class EmployeeCommissionReport extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    
+    protected static string $view = 'filament.pages.employee-commission-report';
 
     protected static ?string $navigationLabel = '员工提成报表';
 
@@ -51,11 +53,19 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $year = $monthParts[0];
                         $month = $monthParts[1];
                         
-                        return $record->consumptionRecords()
+                        // 使用 pivot 表直接计算提成
+                        $records = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
-                            ->withPivot('commission_amount')
-                            ->sum('consumption_record_user.commission_amount');
+                            ->get();
+                        
+                        $total = 0;
+                        foreach ($records as $cr) {
+                            $pivot = $cr->pivot;
+                            $total += $pivot ? $pivot->commission_amount : 0;
+                        }
+                        
+                        return $total;
                     }),
                 TextColumn::make('service_count')
                     ->label('服务次数')
