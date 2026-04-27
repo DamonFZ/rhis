@@ -30,8 +30,8 @@ return new class extends Migration
     {
         Schema::table('rehab_packages', function (Blueprint $table) {
             $table->dropColumn([
-                'package_type',
-                'original_price',
+//                'package_type',
+//                'original_price',
                 'average_price',
                 'is_extendable',
                 'extension_days',
