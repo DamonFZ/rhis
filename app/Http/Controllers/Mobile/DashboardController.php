@@ -10,28 +10,37 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // 修正点 1：将 wechat 改为 easywechat
         $wechatUser = session('easywechat.oauth_user.default');
-
-        // 修正点 2：本地 mock 与真实环境的对象获取
+        
         if (app()->isLocal()) {
             $openid = 'mock_openid_local_dev_123';
         } else {
-            // 直接调用对象方法获取 OpenID
-            $openid = $wechatUser ? $wechatUser->getId() : null;
+            $openid = is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null);
         }
 
         if (!$openid) {
             abort(403, '无法获取微信授权信息，请在微信客户端打开。');
         }
 
-        // 根据 OpenID 查找对应的客户档案
         $patient = PatientProfile::where('wechat_openid', $openid)->first();
 
         if (!$patient) {
             return view('mobile.dashboard.unbound');
         }
 
-        return view('mobile.dashboard.index', compact('patient'));
+        // 1. 计算有效套餐的剩余总课时
+        $totalRemainingSessions = $patient->patientPackages()
+            ->where('status', 'active')
+            ->sum('remaining_sessions');
+
+        // 2. 获取最近一次体态评估的日期
+        $lastAssessment = $patient->physicalAssessments()
+            ->orderBy('assessment_date', 'desc')
+            ->first();
+            
+        $lastAssessmentDate = $lastAssessment ? \Carbon\Carbon::parse($lastAssessment->assessment_date)->format('Y-m-d') : '暂无评估';
+
+        // 将数据传递给视图
+        return view('mobile.dashboard.index', compact('patient', 'totalRemainingSessions', 'lastAssessmentDate'));
     }
 }

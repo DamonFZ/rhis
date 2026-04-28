@@ -30,7 +30,7 @@
                     <path d="M2 12L12 17l10-5" />
                 </svg>
             </div>
-            <div class="text-sm font-medium text-gray-800 leading-snug">剩余总课时<br>12</div>
+            <div class="text-sm font-medium text-gray-800 leading-snug">剩余总课时<br>{{ $totalRemainingSessions }}</div>
         </div>
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center aspect-[4/5]">
             <div class="mb-3">
@@ -38,7 +38,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
             </div>
-            <div class="text-sm font-medium text-gray-800 leading-snug">上次评估<br>2023-10-01</div>
+            <div class="text-sm font-medium text-gray-800 leading-snug">上次评估<br>{{ $lastAssessmentDate }}</div>
         </div>
     </div>
 
