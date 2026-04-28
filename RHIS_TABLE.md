@@ -10,6 +10,7 @@
 | ---------------- | --------- | ---- | ----- | --- | ---------- |
 | id               | bigint    | 20   | 否    | 自增  | 主键         |
 | name             | varchar   | 255  | 否    | -   | 姓名         |
+| username         | varchar   | 255  | 是    | -   | 用户名（唯一）   |
 | email            | varchar   | 255  | 否    | -   | 邮箱（唯一）    |
 | email_verified_at| timestamp | -    | 是    | -   | 邮箱验证时间    |
 | password         | varchar   | 255  | 否    | -   | 密码         |
@@ -20,6 +21,7 @@
 
 **关联关系：**
 - 多对多 `departments`（通过 `department_user` 表）
+- 多对多 `consumptionRecords`（通过 `consumption_record_user` 表）
 
 ---
 
@@ -97,6 +99,7 @@
 | is_extendable    | boolean   | -   | 否    | false| 是否可延期                                                   |
 | extension_days   | int       | 11  | 否    | 0    | 可延期天数                                                   |
 | is_shareable     | boolean   | -   | 否    | false| 是否可共享                                                   |
+| commission_per_service | decimal | 10,2 | 否 | 0 | 单次服务提成金额 |
 | created_at       | timestamp | -   | 是    | -    | 创建时间                                                    |
 | updated_at       | timestamp | -   | 是    | -    | 更新时间                                                    |
 
@@ -109,11 +112,12 @@
 | 字段名              | 类型        | 长度  | 是否可为空 | 默认值 | 备注       |
 | ---------------- | --------- | --- | ----- | --- | -------- |
 | id               | bigint    | 20  | 否    | 自增  | 主键       |
+| wechat_openid    | varchar   | 255 | 是    | -   | 微信OpenID（唯一） |
+| bind_token       | varchar   | 255 | 是    | -   | 绑定Token（唯一） |
 | patient_id       | varchar   | 255 | 否    | -   | 客户编号（唯一） |
 | name             | varchar   | 255 | 否    | -   | 姓名       |
 | phone            | varchar   | 255 | 是    | -   | 联系电话     |
 | join_date        | date      | -   | 是    | -   | 建档日期     |
-| membership_no    | varchar   | 255 | 是    | -   | 会员号      |
 | initial_symptoms | text      | -   | 是    | -   | 初始症状     |
 | created_at       | timestamp | -   | 是    | -   | 创建时间     |
 | updated_at       | timestamp | -   | 是    | -   | 更新时间     |
@@ -181,10 +185,30 @@
 **关联关系：**
 - 属于 `patientProfile`（belongsTo）
 - 属于 `patientPackage`（belongsTo）
+- 多对多 `employees`（通过 `consumption_record_user` 表）
 
 ---
 
-## 9. physical_assessments（康复体态评估表）
+## 9. consumption_record_user（划扣记录-员工关联表）
+
+| 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注           |
+| ------------------- | --------- | --- | ----- | --- | ------------ |
+| id                  | bigint    | 20  | 否    | 自增  | 主键           |
+| consumption_record_id | bigint | 20 | 否 | - | 划扣记录ID |
+| user_id             | bigint    | 20  | 否    | -   | 员工ID         |
+| commission_amount   | decimal   | 10,2 | 否   | 0    | 分配给该员工的提成金额 |
+| created_at          | timestamp | -   | 是    | -   | 创建时间         |
+| updated_at          | timestamp | -   | 是    | -   | 更新时间         |
+
+**外键：**
+- `consumption_record_id` → `consumption_records.id`（级联删除）
+- `user_id` → `users.id`（级联删除）
+
+**索引：** `consumption_record_id`, `user_id`
+
+---
+
+## 10. physical_assessments（康复体态评估表）
 
 | 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                      |
 | ------------------- | --------- | --- | ----- | --- | ----------------------- |
@@ -213,7 +237,7 @@
 
 ---
 
-## 10. imaging_records（影像记录表）
+## 11. imaging_records（影像记录表）
 
 | 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                    |
 | ------------------- | --------- | --- | ----- | --- | --------------------- |
@@ -235,9 +259,9 @@
 
 ---
 
-## 11. Laravel 系统表
+## 12. Laravel 系统表
 
-### 11.1 password_reset_tokens（密码重置 Token 表）
+### 12.1 password_reset_tokens（密码重置 Token 表）
 
 | 字段名       | 类型        | 长度  | 备注   |
 | --------- | --------- | --- | ---- |
@@ -245,7 +269,7 @@
 | token     | varchar   | 255 | Token |
 | created_at| timestamp | -   | 创建时间 |
 
-### 11.2 failed_jobs（失败任务表）
+### 12.2 failed_jobs（失败任务表）
 
 | 字段名          | 类型        | 长度   | 备注     |
 | ------------ | --------- | ---- | ------ |
@@ -257,7 +281,7 @@
 | exception    | longtext  | -    | 异常信息   |
 | failed_at    | timestamp | -    | 失败时间   |
 
-### 11.3 personal_access_tokens（API Token 表）
+### 12.3 personal_access_tokens（API Token 表）
 
 | 字段名          | 类型        | 长度   | 备注        |
 | ------------ | --------- | ---- | --------- |
@@ -284,11 +308,13 @@
 
 ```
 users ────────< department_user >─────── departments
-                                          │
-                                          └── parent_id (自引用)
-
+      │
+      └─────< consumption_record_user >─────── consumption_records
+                                              │
+                                              └─── patient_packages
+                                              │
 rehab_packages（套餐字典，供客户购买参考）
-
+                                              │
 patient_profiles ────< physical_assessments
        │
        ├───────< imaging_records
@@ -299,7 +325,8 @@ patient_profiles ────< physical_assessments
 **设计说明：**
 - **资产与流水分离**：`patient_packages` 作为资产表记录客户的套餐余额，`consumption_records` 作为流水表记录每次消费明细
 - `consumption_records` 通过 `patient_package_id` 关联具体套餐包，创建消费记录时自动扣减套餐包的 `remaining_sessions`
+- **员工提成分配**：`consumption_record_user` 表记录划扣记录与员工的关联，并存储该员工的提成金额
 
 ---
 
-*最后更新：2026-04-18*
+*最后更新：2026-04-28*
