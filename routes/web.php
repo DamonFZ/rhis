@@ -23,6 +23,12 @@ Route::prefix('mobile')->middleware('web')->group(function () {
     Route::post('bind', [\App\Http\Controllers\Mobile\AuthController::class, 'bindStore'])->name('mobile.bind.store');
 });
 
-Route::prefix('mobile')->middleware(['web', 'wechat.oauth:default,snsapi_base'])->group(function () {
+// 动态分配中间件
+$mobileMiddlewares = ['web'];
+if (!app()->isLocal()) {
+    $mobileMiddlewares[] = 'wechat.oauth:default,snsapi_base';
+}
+
+Route::prefix('mobile')->middleware($mobileMiddlewares)->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\Mobile\DashboardController::class, 'index'])->name('mobile.dashboard');
 });
