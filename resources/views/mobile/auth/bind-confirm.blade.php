@@ -32,7 +32,7 @@
             </form>
         @else
             <div class="w-full max-w-sm">
-                <button type="button" class="w-full bg-gray-400 text-white font-medium text-lg py-3.5 rounded-lg transition-colors cursor-not-allowed" disabled>
+                <button type="button" class="w-full bg-gray-300 text-gray-700 font-medium text-lg py-3.5 rounded-lg transition-colors cursor-not-allowed" disabled>
                     {{ __('mobile.already_bound') }}
                 </button>
             </div>
