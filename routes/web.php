@@ -23,6 +23,6 @@ Route::prefix('mobile')->middleware('web')->group(function () {
     Route::post('bind', [\App\Http\Controllers\Mobile\AuthController::class, 'bindStore'])->name('mobile.bind.store');
 });
 
-Route::prefix('mobile')->middleware(['web', 'wechat.oauth:official_account,snsapi_base'])->group(function () {
+Route::prefix('mobile')->middleware(['web', 'wechat.oauth:default,snsapi_base'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\Mobile\DashboardController::class, 'index'])->name('mobile.dashboard');
 });
