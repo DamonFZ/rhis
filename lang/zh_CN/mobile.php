@@ -10,5 +10,6 @@ return [
     'phone_label' => '手机号',
     'phone_value' => '138****8888',
     'confirm_bind' => '确认绑定',
+    'already_bound' => '已绑定',
     'not_you_contact_desk' => '不是本人？请联系前台',
 ];

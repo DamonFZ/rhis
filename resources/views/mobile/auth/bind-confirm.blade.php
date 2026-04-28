@@ -22,13 +22,21 @@
             </div>
         </div>
 
-        <form action="{{ route('mobile.bind.store') }}" method="POST" class="w-full max-w-sm">
-            @csrf
-            <input type="hidden" name="patient_id" value="{{ $patient->id }}">
-            <button type="submit" class="w-full bg-[#07c160] active:bg-[#06ad56] text-white font-medium text-lg py-3.5 rounded-lg transition-colors">
-                {{ __('mobile.confirm_bind') }}
-            </button>
-        </form>
+        @if (empty($patient->wechat_openid))
+            <form action="{{ route('mobile.bind.store') }}" method="POST" class="w-full max-w-sm">
+                @csrf
+                <input type="hidden" name="patient_id" value="{{ $patient->id }}">
+                <button type="submit" class="w-full bg-[#07c160] active:bg-[#06ad56] text-white font-medium text-lg py-3.5 rounded-lg transition-colors">
+                    {{ __('mobile.confirm_bind') }}
+                </button>
+            </form>
+        @else
+            <div class="w-full max-w-sm">
+                <button type="button" class="w-full bg-gray-400 text-white font-medium text-lg py-3.5 rounded-lg transition-colors cursor-not-allowed" disabled>
+                    {{ __('mobile.already_bound') }}
+                </button>
+            </div>
+        @endif
 
         <div class="mt-8 text-center">
             <a href="#" class="text-sm text-gray-400 hover:text-gray-500 transition-colors">
