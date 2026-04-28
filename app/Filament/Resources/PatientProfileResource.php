@@ -100,9 +100,6 @@ class PatientProfileResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
                 Action::make('bindWechat')
                     ->label('微信绑定')
                     ->icon('heroicon-o-qr-code')
@@ -112,11 +109,9 @@ class PatientProfileResource extends Resource
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalContent(function ($record) {
-                        // 如果没有 token，则生成一个永久 token
                         if (blank($record->bind_token)) {
                             $record->update(['bind_token' => Str::random(32)]);
                         }
-                        // 生成包含 token 的参数链接
                         $url = route('mobile.bind', [
                             'patient_id' => $record->id,
                             'token' => $record->bind_token,
@@ -139,6 +134,24 @@ class PatientProfileResource extends Resource
                                 Notification::make()->success()->title('已重新生成并作废旧码')->send();
                             }),
                     ]),
+                Action::make('unbindWechat')
+                    ->label('解绑')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => filled($record->wechat_openid))
+                    ->requiresConfirmation()
+                    ->modalHeading('确认解绑微信')
+                    ->modalDescription('确定要解绑该客户的微信吗？解绑后需要重新生成二维码让客户扫码绑定。')
+                    ->action(function ($record) {
+                        $record->update([
+                            'wechat_openid' => null,
+                            'bind_token' => null
+                        ]);
+                        Notification::make()->success()->title('已成功解绑微信')->send();
+                    }),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 // 暂时屏蔽批量删除功能，防止员工误操作
