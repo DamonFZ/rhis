@@ -5,7 +5,7 @@ return [
     'card_title' => '确认绑定',
     'name_label' => '姓名',
     'name_value' => '陈子疯',
-    'member_id_label' => '会员号',
+    'member_id_label' => '客户编号',
     'member_id_value' => 'VIP-88392',
     'phone_label' => '手机号',
     'phone_value' => '138****8888',

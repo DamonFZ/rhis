@@ -13,7 +13,7 @@
                 </div>
                 <div class="flex justify-between items-center border-b border-gray-50 pb-4">
                     <span class="text-gray-500">{{ __('mobile.member_id_label') }}</span>
-                    <span class="text-gray-900 font-medium">{{ $patient->patient_number ?? __('mobile.member_id_value') }}</span>
+                    <span class="text-gray-900 font-medium">{{ $patient->patient_id ?? __('mobile.member_id_value') }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-gray-500">{{ __('mobile.phone_label') }}</span>

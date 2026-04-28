@@ -45,4 +45,10 @@ class PatientProfile extends Model
         return $this->hasOne(ImagingRecord::class, 'patient_profile_id')
             ->latestOfMany('treatment_date');
     }
+
+    public function latestConsumptionRecord(): HasOne
+    {
+        return $this->hasOne(ConsumptionRecord::class, 'patient_profile_id')
+            ->latestOfMany('treatment_date');
+    }
 }
