@@ -16,10 +16,9 @@
 
 例如：
 - 执行迁移：docker exec -w /www/wwwroot/linshe/rhis bt_dev_env php artisan migrate
-
 - 生成 Filament 资源：docker exec -w /www/wwwroot/linshe/rhis bt_dev_env php artisan make:filament-resource PatientProfile
-
 - 清理缓存：docker exec -w /www/wwwroot/linshe/rhis bt_dev_env php artisan optimize:clear
+- 生产静态文件：docker exec -w /www/wwwroot/linshe/rhis bt_dev_env nvm use 20 && npm install && npm run build
 
 
 ## 1.项目愿景
