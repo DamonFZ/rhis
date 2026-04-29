@@ -117,6 +117,7 @@
 | patient_id       | varchar   | 255 | 否    | -   | 客户编号（唯一） |
 | name             | varchar   | 255 | 否    | -   | 姓名       |
 | phone            | varchar   | 255 | 是    | -   | 联系电话     |
+| membership_no    | varchar   | 255 | 是    | -   | 会员号       |
 | join_date        | date      | -   | 是    | -   | 建档日期     |
 | initial_symptoms | text      | -   | 是    | -   | 初始症状     |
 | created_at       | timestamp | -   | 是    | -   | 创建时间     |
