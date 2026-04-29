@@ -28,4 +28,9 @@ return [
     'valid_until' => '有效期至',
     'valid_forever' => '長期有效',
     'no_packages' => '您目前還沒有任何套餐',
+    'treatment_date' => '康復日期',
+    'treatment_content' => '康復內容',
+    'deducted_sessions' => '扣減',
+    'remaining_sessions_count' => '剩餘',
+    'no_usage_history' => '暫無使用記錄',
 ];

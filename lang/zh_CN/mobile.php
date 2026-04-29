@@ -28,4 +28,9 @@ return [
     'valid_until' => '有效期至',
     'valid_forever' => '长期有效',
     'no_packages' => '您目前还没有任何套餐',
+    'treatment_date' => '康复日期',
+    'treatment_content' => '康复内容',
+    'deducted_sessions' => '扣减',
+    'remaining_sessions_count' => '剩余',
+    'no_usage_history' => '暂无使用记录',
 ];

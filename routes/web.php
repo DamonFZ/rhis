@@ -32,4 +32,5 @@ if (!app()->isLocal()) {
 Route::prefix('mobile')->middleware($mobileMiddlewares)->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\Mobile\DashboardController::class, 'index'])->name('mobile.dashboard');
     Route::get('packages', [\App\Http\Controllers\Mobile\PackageController::class, 'index'])->name('mobile.packages');
+    Route::get('usage-history', [\App\Http\Controllers\Mobile\UsageHistoryController::class, 'index'])->name('mobile.usage_history');
 });

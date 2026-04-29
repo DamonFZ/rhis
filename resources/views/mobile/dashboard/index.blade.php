@@ -41,12 +41,12 @@
             </div>
             <span class="text-sm font-medium text-gray-800">{{ __('mobile.my_packages') }}</span>
         </a>
-        <div class="flex flex-col items-center cursor-pointer">
+        <a href="{{ route('mobile.usage_history') }}" class="flex flex-col items-center cursor-pointer block">
             <div class="w-14 h-14 mb-2 flex items-center justify-center bg-[#F0F8F4] rounded-full">
                 <x-heroicon-o-clock class="w-10 h-10 text-gray-700" />
             </div>
             <span class="text-sm font-medium text-gray-800">{{ __('mobile.usage_history') }}</span>
-        </div>
+        </a>
         <div class="flex flex-col items-center cursor-pointer">
             <div class="w-14 h-14 mb-2 flex items-center justify-center bg-[#FFF5E8] rounded-full">
                 <x-heroicon-o-document-chart-bar class="w-10 h-10 text-gray-700" />
