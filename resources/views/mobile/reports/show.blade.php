@@ -103,13 +103,13 @@
         @if(!empty($flexibilities))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
-                <x-heroicon-o-face-smile class="w-5 h-5 text-emerald-500 mr-2"/>
+                <x-heroicon-o-face-smile class="w-5 h-5 text-gray-500 mr-2"/>
                 {{ __('mobile.flexibility') }}
             </h3>
             <div class="flex flex-wrap gap-2.5">
                 @foreach($flexibilities as $key => $val)
                     @if(!empty($val))
-                        <span class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-lg whitespace-nowrap">
+                        <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg whitespace-nowrap">
                             <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
                             <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
                         </span>
@@ -122,12 +122,12 @@
         @if(!empty($backTags))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
-                <x-heroicon-o-user-circle class="w-5 h-5 text-orange-500 mr-2"/>
+                <x-heroicon-o-user-circle class="w-5 h-5 text-gray-500 mr-2"/>
                 体态评估-背面
             </h3>
             <div class="flex flex-wrap gap-2.5">
                 @foreach($backTags as $key => $val)
-                    <span class="px-3 py-1.5 bg-orange-50 text-orange-600 text-sm rounded-lg whitespace-nowrap">
+                    <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg whitespace-nowrap">
                         <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
                         <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
                     </span>
@@ -139,12 +139,12 @@
         @if(!empty($sideTags))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
-                <x-heroicon-o-user-circle class="w-5 h-5 text-purple-500 mr-2"/>
+                <x-heroicon-o-user-circle class="w-5 h-5 text-gray-500 mr-2"/>
                 体态评估-侧面
             </h3>
             <div class="flex flex-wrap gap-2.5">
                 @foreach($sideTags as $key => $val)
-                    <span class="px-3 py-1.5 bg-purple-50 text-purple-600 text-sm rounded-lg whitespace-nowrap">
+                    <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg whitespace-nowrap">
                         <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
                         <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
                     </span>
