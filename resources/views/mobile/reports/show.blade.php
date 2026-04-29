@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        @if(!empty($report->posture_tags))
+        @if(!empty($report->posture_tags) && is_array($report->posture_tags))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-3 flex items-center">
                 <x-heroicon-o-tag class="w-5 h-5 text-blue-500 mr-2"/>
@@ -60,7 +60,7 @@
             </h3>
             <div class="flex flex-wrap gap-2">
                 @foreach($report->posture_tags as $tag)
-                    <span class="px-3 py-1 bg-blue-50 text-blue-600 text-sm rounded-full">{{ $tag }}</span>
+                    <span class="px-3 py-1 bg-blue-50 text-blue-600 text-sm rounded-full">{{ is_string($tag) ? e($tag) : '' }}</span>
                 @endforeach
             </div>
         </div>
