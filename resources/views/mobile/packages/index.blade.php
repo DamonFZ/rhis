@@ -39,27 +39,21 @@
                         
                         <div class="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100">
                             <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1E4D7B] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v1m0-1c-1.11 0-2.08.402-2.599 1M12 19V8" />
-                                </svg>
+                                <x-heroicon-o-clock class="w-5 h-5 text-[#1E4D7B] mr-2" />
                                 <span class="text-sm font-medium text-gray-900">
                                     {{ $package->remaining_sessions }}
                                 </span>
                             </div>
                             @if($package->expiry_date)
                                 <div class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1E4D7B] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                                    <x-heroicon-o-calendar-days class="w-5 h-5 text-[#1E4D7B] mr-2" />
                                     <span class="text-sm font-medium text-gray-900">
                                         {{ \Carbon\Carbon::parse($package->expiry_date)->format('Y-m-d') }}
                                     </span>
                                 </div>
                             @else
                                 <div class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#1E4D7B] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                                    <x-heroicon-o-calendar-days class="w-5 h-5 text-[#1E4D7B] mr-2" />
                                     <span class="text-sm font-medium text-gray-900">
                                         {{ __('mobile.valid_forever') }}
                                     </span>
