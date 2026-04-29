@@ -7,7 +7,14 @@
 </head>
 <body class="bg-[#F8F9FA] min-h-screen font-sans">
     
-    <div class="bg-[#1E4D7B] rounded-b-3xl pt-10 pb-20 px-6 shadow-md">
+    <div class="bg-[#1E4D7B] rounded-b-3xl pt-10 pb-20 px-6 shadow-md relative">
+        <div class="absolute top-4 right-5 z-10">
+            @if(app()->getLocale() == 'zh_CN')
+                <a href="{{ route('mobile.lang.switch', 'zh_HK') }}" class="text-sm font-medium text-white/80 hover:text-white">繁體</a>
+            @else
+                <a href="{{ route('mobile.lang.switch', 'zh_CN') }}" class="text-sm font-medium text-white/80 hover:text-white">简体</a>
+            @endif
+        </div>
         <div class="flex items-center space-x-4">
             <div class="w-16 h-16 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center overflow-hidden">
                 <x-heroicon-s-user class="w-10 h-10 text-gray-400 mt-2" />

@@ -10,15 +10,16 @@ class SetMobileLocale
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $availableLocales = ['zh_CN', 'zh_HK', 'zh_TW'];
-        $locale = $request->query('lang', $request->header('Accept-Language', 'zh_CN'));
-        
-        if (in_array($locale, $availableLocales)) {
-            app()->setLocale($locale);
+        if (session()->has('mobile_locale')) {
+            app()->setLocale(session('mobile_locale'));
         } else {
-            app()->setLocale('zh_CN');
+            $language = $request->server('HTTP_ACCEPT_LANGUAGE');
+            if ($language && (str_contains(strtolower($language), 'zh-hk') || str_contains(strtolower($language), 'zh-tw'))) {
+                app()->setLocale('zh_HK');
+            } else {
+                app()->setLocale('zh_CN');
+            }
         }
-
         return $next($request);
     }
 }
