@@ -43,4 +43,13 @@ return [
     'assessment_no' => '報告編號',
     'view_detail' => '查看詳情',
     'no_reports' => '暫無康復報告',
+    'report_detail' => '報告詳情',
+    'basic_metrics' => '基礎體測數據',
+    'height' => '身高',
+    'weight' => '體重',
+    'bmi' => 'BMI',
+    'body_fat_rate' => '體脂率',
+    'posture_analysis' => '體態分析標籤',
+    'therapist_remark' => '康復師建議與備註',
+    'no_data' => '暫無數據',
 ];

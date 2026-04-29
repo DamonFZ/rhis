@@ -33,10 +33,9 @@
                 
                 <div class="flex items-center justify-between pt-4 border-t border-gray-50">
                     <div class="text-xs text-gray-400">{{ __('mobile.assessment_no') }}: {{ $report->assessment_no }}</div>
-                    <button class="text-sm font-medium text-blue-600 flex items-center">
-                        {{ __('mobile.view_detail') }}
-                        <x-heroicon-m-chevron-right class="w-4 h-4 ml-1" />
-                    </button>
+                    <a href="{{ route('mobile.reports.show', $report->id) }}" class="text-sm font-medium text-blue-600 flex items-center">
+                        {{ __('mobile.view_detail') }} <x-heroicon-m-chevron-right class="w-4 h-4 ml-1" />
+                    </a>
                 </div>
             </div>
         @empty

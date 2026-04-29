@@ -27,4 +27,20 @@ class ReportController extends Controller
 
         return view('mobile.reports.index', compact('reports'));
     }
+
+    public function show($id)
+    {
+        $wechatUser = session('easywechat.oauth_user.default');
+        $openid = app()->isLocal() ? 'mock_openid_local_dev_123' : ($wechatUser['id'] ?? ($wechatUser ? $wechatUser->getId() : null));
+
+        if (!$openid) { abort(403, 'Unauthorized'); }
+        $patient = \App\Models\PatientProfile::where('wechat_openid', $openid)->firstOrFail();
+
+        // 查找对应报告，并确保归属当前客户
+        $report = \App\Models\PhysicalAssessment::where('id', $id)
+            ->where('patient_profile_id', $patient->id)
+            ->firstOrFail();
+
+        return view('mobile.reports.show', compact('report'));
+    }
 }

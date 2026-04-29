@@ -43,4 +43,13 @@ return [
     'assessment_no' => '报告编号',
     'view_detail' => '查看详情',
     'no_reports' => '暂无康复报告',
+    'report_detail' => '报告详情',
+    'basic_metrics' => '基础体测数据',
+    'height' => '身高',
+    'weight' => '体重',
+    'bmi' => 'BMI',
+    'body_fat_rate' => '体脂率',
+    'posture_analysis' => '体态分析标签',
+    'therapist_remark' => '康复师建议与备注',
+    'no_data' => '暂无数据',
 ];
