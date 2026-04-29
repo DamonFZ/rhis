@@ -52,4 +52,6 @@ return [
     'posture_analysis' => '体态分析标签',
     'therapist_remark' => '康复师建议与备注',
     'no_data' => '暂无数据',
+    'circumference' => '详细围度',
+    'flexibility' => '柔软度评估',
 ];

@@ -52,4 +52,6 @@ return [
     'posture_analysis' => '體態分析標籤',
     'therapist_remark' => '康復師建議與備註',
     'no_data' => '暫無數據',
+    'circumference' => '詳細圍度',
+    'flexibility' => '柔軟度評估',
 ];
