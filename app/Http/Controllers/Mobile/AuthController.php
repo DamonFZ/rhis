@@ -67,7 +67,7 @@ class AuthController extends Controller
 
         session()->forget('easywechat.oauth_user.default');
 
-        // TODO: 暂时返回成功提示，后续改为重定向到个人中心
-        return "绑定成功！您的档案已关联微信 OpenID：" . $openid;
+        // 绑定成功后，直接重定向到 Dashboard 首页
+        return redirect()->route('mobile.dashboard');
     }
 }
