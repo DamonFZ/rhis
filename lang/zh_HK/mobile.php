@@ -35,4 +35,12 @@ return [
     'no_usage_history' => '暫無使用記錄',
     'general_service' => '通用服務',
     'routine_training' => '常規康復訓練',
+    'assessment_date' => '評估日期',
+    'assessment_type' => '評估類型',
+    'type_initial' => '初評',
+    'type_reassessment' => '複評',
+    'type_final' => '末評',
+    'assessment_no' => '報告編號',
+    'view_detail' => '查看詳情',
+    'no_reports' => '暫無康復報告',
 ];

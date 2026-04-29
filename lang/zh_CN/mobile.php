@@ -35,4 +35,12 @@ return [
     'no_usage_history' => '暂无使用记录',
     'general_service' => '通用服务',
     'routine_training' => '常规康复训练',
+    'assessment_date' => '评估日期',
+    'assessment_type' => '评估类型',
+    'type_initial' => '初评',
+    'type_reassessment' => '复评',
+    'type_final' => '末评',
+    'assessment_no' => '报告编号',
+    'view_detail' => '查看详情',
+    'no_reports' => '暂无康复报告',
 ];

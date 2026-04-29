@@ -47,12 +47,12 @@
             </div>
             <span class="text-sm font-medium text-gray-800">{{ __('mobile.usage_history') }}</span>
         </a>
-        <div class="flex flex-col items-center cursor-pointer">
+        <a href="{{ route('mobile.reports') }}" class="flex flex-col items-center cursor-pointer block">
             <div class="w-14 h-14 mb-2 flex items-center justify-center bg-[#FFF5E8] rounded-full">
                 <x-heroicon-o-document-chart-bar class="w-10 h-10 text-gray-700" />
             </div>
             <span class="text-sm font-medium text-gray-800">{{ __('mobile.rehab_reports') }}</span>
-        </div>
+        </a>
         <div class="flex flex-col items-center cursor-pointer">
             <div class="w-14 h-14 mb-2 flex items-center justify-center bg-[#F3E8FA] rounded-full">
                 <x-heroicon-o-calendar-days class="w-10 h-10 text-gray-700" />
