@@ -14,7 +14,7 @@
             </div>
             <div class="text-white">
                 <h1 class="text-xl font-medium tracking-wide">{{ $patient->name }}</h1>
-                <p class="text-[#8FB3D9] text-sm mt-1 tracking-wider">ID{{ str_pad($patient->id, 5, '0', STR_PAD_LEFT) }}</p>
+                <p class="text-[#8FB3D9] text-sm mt-1 tracking-wider">{{ $patient->patient_id }}</p>
             </div>
         </div>
     </div>
