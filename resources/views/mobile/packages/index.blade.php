@@ -10,9 +10,7 @@
     <div class="bg-[#1E4D7B] pt-10 pb-6 px-6 shadow-md">
         <div class="flex items-center">
             <a href="{{ route('mobile.dashboard') }}" class="text-white mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
+                <x-heroicon-o-chevron-left class="w-6 h-6" />
             </a>
             <h1 class="text-xl font-medium text-white">{{ __('mobile.my_packages') }}</h1>
         </div>
@@ -21,9 +19,7 @@
     <div class="px-5 mt-6">
         @if($packages->isEmpty())
             <div class="bg-white rounded-2xl p-8 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
+                <x-heroicon-o-inbox class="w-16 h-16 mx-auto text-gray-300 mb-4" />
                 <p class="text-gray-500">{{ __('mobile.no_packages') }}</p>
             </div>
         @else
