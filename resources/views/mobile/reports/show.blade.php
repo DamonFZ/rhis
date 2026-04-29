@@ -56,14 +56,29 @@
             $dict = [
                 'chest'=>'胸围', 'waist'=>'腰围', 'hip'=>'臀围', 'left_arm'=>'左臂围', 'right_arm'=>'右臂围', 'left_thigh'=>'左大腿围', 'right_thigh'=>'右大腿围',
                 'trunk'=>'躯干', 'iliopsoas'=>'髂腰肌', 'hamstrings'=>'腘绳肌', 'quadriceps'=>'股四头肌', 'calf'=>'小腿肌群', 'shoulder_1'=>'肩部1', 'shoulder_2'=>'肩部2',
-                'head'=>'头部', 'cervical_spine'=>'颈椎', 'scapula'=>'肩胛骨', 'thoracic_spine'=>'胸椎', 'lumbar_spine'=>'腰椎', 'pelvis'=>'骨盆', 'knee'=>'膝关节',
-                'back_foot'=>'足部(背)', 'back_knee'=>'膝关节(背)', 'side_head'=>'头部(侧)', 'side_knee'=>'膝关节(侧)', 'back_pelvis'=>'骨盆(背)', 'shoulder'=>'肩部', 'thoracolumbar'=>'胸腰椎'
+                'back_foot'=>'足弓', 'back_knee'=>'膝关节', 'back_pelvis'=>'骨盆', 'back_scapula'=>'肩胛骨', 'back_cervical'=>'颈椎', 
+                'back_shoulder'=>'肩部', 'back_thoracolumbar'=>'胸腰椎',
+                'side_head'=>'头部', 'side_knee'=>'膝关节', 'side_lumbar'=>'腰椎', 'side_pelvis'=>'骨盆', 
+                'side_cervical'=>'颈椎', 'side_thoracic'=>'胸椎', 'side_scapula_'=>'肩胛骨'
             ];
             $t = function($k) use ($dict) { return $dict[$k] ?? $k; };
 
             $circumferences = is_string($report->circumference) ? json_decode($report->circumference, true) : $report->circumference;
             $flexibilities = is_string($report->flexibility) ? json_decode($report->flexibility, true) : $report->flexibility;
             $postureTags = is_string($report->posture_tags) ? json_decode($report->posture_tags, true) : $report->posture_tags;
+            
+            // 分组
+            $backTags = [];
+            $sideTags = [];
+            foreach($postureTags as $key => $val) {
+                if(!empty($val)) {
+                    if(str_starts_with($key, 'back_')) {
+                        $backTags[$key] = $val;
+                    } elseif(str_starts_with($key, 'side_')) {
+                        $sideTags[$key] = $val;
+                    }
+                }
+            }
         @endphp
 
         @if(!empty($circumferences))
@@ -104,20 +119,35 @@
         </div>
         @endif
 
-        @if(!empty($postureTags))
+        @if(!empty($backTags))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
                 <x-heroicon-o-user-circle class="w-5 h-5 text-orange-500 mr-2"/>
-                {{ __('mobile.posture_analysis') }}
+                体态评估-背面
             </h3>
             <div class="flex flex-wrap gap-2.5">
-                @foreach($postureTags as $key => $val)
-                    @if(!empty($val))
-                        <span class="px-3 py-1.5 bg-orange-50 text-orange-600 text-sm rounded-lg whitespace-nowrap">
-                            @if(!is_numeric($key)) <span class="opacity-70 mr-1">{{ $t($key) }}:</span> @endif
-                            <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
-                        </span>
-                    @endif
+                @foreach($backTags as $key => $val)
+                    <span class="px-3 py-1.5 bg-orange-50 text-orange-600 text-sm rounded-lg whitespace-nowrap">
+                        <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
+                        <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
+                    </span>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        @if(!empty($sideTags))
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
+                <x-heroicon-o-user-circle class="w-5 h-5 text-purple-500 mr-2"/>
+                体态评估-侧面
+            </h3>
+            <div class="flex flex-wrap gap-2.5">
+                @foreach($sideTags as $key => $val)
+                    <span class="px-3 py-1.5 bg-purple-50 text-purple-600 text-sm rounded-lg whitespace-nowrap">
+                        <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
+                        <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
+                    </span>
                 @endforeach
             </div>
         </div>
