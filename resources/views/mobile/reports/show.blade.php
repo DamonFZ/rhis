@@ -59,7 +59,7 @@
                 {{ __('mobile.posture_analysis') }}
             </h3>
             <div class="flex flex-wrap gap-2">
-                @foreach(is_string($report->posture_tags) ? json_decode($report->posture_tags, true) : $report->posture_tags as $tag)
+                @foreach($report->posture_tags as $tag)
                     <span class="px-3 py-1 bg-blue-50 text-blue-600 text-sm rounded-full">{{ $tag }}</span>
                 @endforeach
             </div>
