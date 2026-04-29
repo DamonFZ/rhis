@@ -33,4 +33,6 @@ return [
     'deducted_sessions' => '扣減',
     'remaining_sessions_count' => '剩餘',
     'no_usage_history' => '暫無使用記錄',
+    'general_service' => '通用服務',
+    'routine_training' => '常規康復訓練',
 ];
