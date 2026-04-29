@@ -21,6 +21,14 @@ class ConsumptionRecord extends Model
         parent::boot();
 
         static::creating(function ($record) {
+            // 自动设置套餐名称
+            if ($record->patient_package_id && !$record->package_name) {
+                $package = PatientPackage::find($record->patient_package_id);
+                if ($package) {
+                    $record->package_name = $package->package_name;
+                }
+            }
+
             // 自动扣减关联套餐包的剩余次数
             if ($record->patient_package_id && $record->deducted_sessions > 0) {
                 $package = PatientPackage::find($record->patient_package_id);
