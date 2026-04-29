@@ -52,53 +52,70 @@
             </div>
         </div>
 
-        @php $circumferences = is_string($report->circumference) ? json_decode($report->circumference, true) : $report->circumference; @endphp
+        @php
+            $dict = [
+                'chest'=>'胸围', 'waist'=>'腰围', 'hip'=>'臀围', 'left_arm'=>'左臂围', 'right_arm'=>'右臂围', 'left_thigh'=>'左大腿围', 'right_thigh'=>'右大腿围',
+                'trunk'=>'躯干', 'iliopsoas'=>'髂腰肌', 'hamstrings'=>'腘绳肌', 'quadriceps'=>'股四头肌', 'calf'=>'小腿肌群', 'shoulder_1'=>'肩部1', 'shoulder_2'=>'肩部2',
+                'head'=>'头部', 'cervical_spine'=>'颈椎', 'scapula'=>'肩胛骨', 'thoracic_spine'=>'胸椎', 'lumbar_spine'=>'腰椎', 'pelvis'=>'骨盆', 'knee'=>'膝关节',
+                'back_foot'=>'足部(背)', 'back_knee'=>'膝关节(背)', 'side_head'=>'头部(侧)', 'side_knee'=>'膝关节(侧)', 'back_pelvis'=>'骨盆(背)', 'shoulder'=>'肩部', 'thoracolumbar'=>'胸腰椎'
+            ];
+            $t = function($k) use ($dict) { return $dict[$k] ?? $k; };
+
+            $circumferences = is_string($report->circumference) ? json_decode($report->circumference, true) : $report->circumference;
+            $flexibilities = is_string($report->flexibility) ? json_decode($report->flexibility, true) : $report->flexibility;
+            $postureTags = is_string($report->posture_tags) ? json_decode($report->posture_tags, true) : $report->posture_tags;
+        @endphp
+
         @if(!empty($circumferences))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
                 <x-heroicon-o-arrows-pointing-out class="w-5 h-5 text-indigo-500 mr-2"/>
                 {{ __('mobile.circumference') }}
             </h3>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 gap-3">
                 @foreach($circumferences as $key => $val)
-                    <div class="bg-indigo-50/50 rounded-lg p-2 text-center border border-indigo-50">
-                        <div class="text-xs text-gray-500">{{ $key }}</div>
-                        <div class="font-bold text-gray-800 mt-0.5">{{ $val ?: '--' }} <span class="text-[10px] font-normal text-gray-400">cm</span></div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        @php $flexibilities = is_string($report->flexibility) ? json_decode($report->flexibility, true) : $report->flexibility; @endphp
-        @if(!empty($flexibilities))
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 class="text-base font-bold text-gray-800 mb-3 flex items-center">
-                <x-heroicon-o-face-smile class="w-5 h-5 text-emerald-500 mr-2"/>
-                {{ __('mobile.flexibility') }}
-            </h3>
-            <div class="flex flex-wrap gap-2">
-                @foreach($flexibilities as $key => $val)
                     @if(!empty($val))
-                        <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs rounded border border-emerald-100">{{ $key }}: {{ is_array($val) ? implode(',', $val) : $val }}</span>
+                    <div class="flex justify-between items-center bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <span class="text-sm text-gray-500">{{ $t($key) }}</span>
+                        <span class="font-bold text-gray-800">{{ $val }} <span class="text-xs font-normal text-gray-400">cm</span></span>
+                    </div>
                     @endif
                 @endforeach
             </div>
         </div>
         @endif
 
-        @php $postureTags = is_string($report->posture_tags) ? json_decode($report->posture_tags, true) : $report->posture_tags; @endphp
+        @if(!empty($flexibilities))
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
+                <x-heroicon-o-face-smile class="w-5 h-5 text-emerald-500 mr-2"/>
+                {{ __('mobile.flexibility') }}
+            </h3>
+            <div class="flex flex-wrap gap-2.5">
+                @foreach($flexibilities as $key => $val)
+                    @if(!empty($val))
+                        <span class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-lg whitespace-nowrap">
+                            <span class="opacity-70 mr-1">{{ $t($key) }}:</span>
+                            <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
+                        </span>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         @if(!empty($postureTags))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 class="text-base font-bold text-gray-800 mb-3 flex items-center">
+            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center">
                 <x-heroicon-o-user-circle class="w-5 h-5 text-orange-500 mr-2"/>
                 {{ __('mobile.posture_analysis') }}
             </h3>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2.5">
                 @foreach($postureTags as $key => $val)
                     @if(!empty($val))
-                        <span class="px-2.5 py-1 bg-orange-50 text-orange-600 text-xs rounded border border-orange-100">
-                            {{ is_numeric($key) ? '' : $key . ': ' }}{{ is_array($val) ? implode(',', $val) : $val }}
+                        <span class="px-3 py-1.5 bg-orange-50 text-orange-600 text-sm rounded-lg whitespace-nowrap">
+                            @if(!is_numeric($key)) <span class="opacity-70 mr-1">{{ $t($key) }}:</span> @endif
+                            <span class="font-medium">{{ is_array($val) ? implode(',', $val) : $val }}</span>
                         </span>
                     @endif
                 @endforeach
