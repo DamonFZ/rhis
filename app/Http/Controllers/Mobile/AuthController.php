@@ -10,7 +10,7 @@ class AuthController extends Controller
 {
     public function bindConfirm(Request $request)
     {
-        // 校验数据库中的 bind_token 是否匹配 (不再使用 hasValidSignature)
+        // 1. 校验数据库中的 bind_token 是否匹配
         $patient = PatientProfile::where('id', $request->patient_id)
             ->where('bind_token', $request->token)
             ->firstOrFail();
@@ -19,34 +19,38 @@ class AuthController extends Controller
         if (app()->isLocal()) {
             session(['easywechat.oauth_user.default' => 'mock_openid_local_dev_123']);
         } else {
-            // 兼容 v7 版本的实例获取方式
             $app = app(\EasyWeChat\OfficialAccount\Application::class);
             $oauth = $app->getOAuth();
 
-            // 修复点 1：必须优先拦截并处理带有 code 的回调请求
+            // 优先拦截并处理带有 code 的回调请求
             if ($request->has('code')) {
                 $user = $oauth->userFromCode($request->code);
-                // 修复点 2：统一使用全局规范的 Session 键名，并将整个 user 对象存入（兼容对象的 getId 调用）
                 session(['easywechat.oauth_user.default' => $user]);
-                
-                // 剔除一次性的 code 和 state 参数，重定向回干净的当前页面
+
                 return redirect()->to($request->url() . '?' . http_build_query($request->except(['code', 'state'])));
             }
 
-            // 修复点 3：如果没有 code，且没找到 session，才发起微信授权请求
+            // 如果没有 session，发起微信授权请求 (修复 v7 返回字符串的问题)
             if (!session()->has('easywechat.oauth_user.default')) {
-                return $oauth->scopes(['snsapi_base'])->redirect($request->fullUrl());
+                $authUrl = $oauth->scopes(['snsapi_base'])->redirect($request->fullUrl());
+                return redirect()->away($authUrl);
             }
         }
 
-        // 3. 渲染视图，传入数据
+        // 3. 自动执行绑定逻辑
         $wechatUser = session('easywechat.oauth_user.default');
-        $openid = app()->isLocal() ? $wechatUser : ($wechatUser['id'] ?? ($wechatUser ? $wechatUser->getId() : null));
-        
-        return view('mobile.auth.bind-confirm', [
-            'patient' => $patient,
-            'openid' => $openid
-        ]);
+        $openid = app()->isLocal() ? $wechatUser : (is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null));
+
+        if ($openid) {
+            // 写入 OpenID，并清空 token 使二维码立刻失效防复用
+            $patient->update([
+                'wechat_openid' => $openid,
+                'bind_token' => null
+            ]);
+        }
+
+        // 4. 绑定成功，直接重定向到大本营！(绝对不要 forget session，否则大本营会报 403)
+        return redirect()->route('mobile.dashboard');
     }
 
     public function bindStore(Request $request)
