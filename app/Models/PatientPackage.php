@@ -51,14 +51,14 @@ class PatientPackage extends Model
         });
 
         static::saving(function ($model) {
-            // 提成比例字典：1-自主开发(3%), 2-康复续卡(1%), 3-协助开单(2%)
+            $setting = \App\Models\CommissionSetting::first();
+            // 将百分比转换为小数计算
             $commissionRates = [
-                1 => 0.03,
-                2 => 0.01,
-                3 => 0.02,
+                1 => ($setting->sales_type_1_rate ?? 3.0) / 100,
+                2 => ($setting->sales_type_2_rate ?? 1.0) / 100,
+                3 => ($setting->sales_type_3_rate ?? 2.0) / 100,
             ];
 
-            // 如果选择了开单类型，并且有价格，则自动计算提成金额
             if ($model->sales_type && isset($commissionRates[$model->sales_type]) && $model->price > 0) {
                 $model->sales_commission = $model->price * $commissionRates[$model->sales_type];
             } else {

@@ -152,6 +152,9 @@
 | is_shareable        | tinyint   | 1    | 否    | 0     | 是否可共享                 |
 | purchase_date       | date      | -    | 是    | -     | 购买日期                  |
 | expiry_date         | date      | -    | 是    | -     | 到期日期                  |
+| salesperson_id      | bigint    | 20   | 是    | -     | 关联开单员工（销售）ID |
+| sales_type          | tinyint   | 1    | 是    | -     | 销售类型：1-自主开发(3%), 2-康复续卡(1%), 3-协助(2%) |
+| sales_commission    | decimal   | 10,2 | 否    | 0     | 销售提成金额          |
 | created_at          | timestamp | -    | 是    | -     | 创建时间                  |
 | updated_at          | timestamp | -    | 是    | -     | 更新时间                  |
 
@@ -160,6 +163,7 @@
 
 **关联关系：**
 - 属于 `patientProfile`（belongsTo）
+- 属于 `salesperson`（belongsTo，销售人员）
 - 一对多 `consumptionRecords`（消费流水）
 
 ---
@@ -299,6 +303,22 @@
 
 ---
 
+## 13. commission_settings（全局提成设置表）
+
+| 字段名              | 类型        | 长度   | 是否可为空 | 默认值 | 备注                    |
+| ---------------- | --------- | ---- | ----- | --- | --------------------- |
+| id               | bigint    | 20   | 否    | 自增  | 主键                    |
+| service_commission | decimal | 10,2 | 否   | 15.00 | 单次服务提成(元)          |
+| sales_type_1_rate | decimal  | 5,2  | 否    | 3.00 | 自主开发提成比例(%)        |
+| sales_type_2_rate | decimal  | 5,2  | 否    | 1.00 | 康复续卡提成比例(%)        |
+| sales_type_3_rate | decimal  | 5,2  | 否    | 2.00 | 协助开单提成比例(%)        |
+| created_at       | timestamp | -    | 是    | -   | 创建时间                  |
+| updated_at       | timestamp | -    | 是    | -   | 更新时间                  |
+
+**说明：** 该表存储全局提成配置，通常只有一条记录（ID=1）。通过 Filament 后台"设置 -> 提成设置"菜单管理。
+
+---
+
 ## 已删除的表
 
 - ~~charge_items（收费项目表）~~ - 已于 2026-04-17 移除，相关功能已整合至康复套餐表
@@ -330,4 +350,4 @@ patient_profiles ────< physical_assessments
 
 ---
 
-*最后更新：2026-04-29*
+*最后更新：2026-04-30*

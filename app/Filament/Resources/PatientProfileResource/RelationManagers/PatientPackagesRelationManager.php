@@ -150,11 +150,14 @@ class PatientPackagesRelationManager extends RelationManager
                             ->nullable(),
                         Forms\Components\Select::make('sales_type')
                             ->label('开单提成类型')
-                            ->options([
-                                1 => '自主开发 (提成 3%)',
-                                2 => '康复续卡 (提成 1%)',
-                                3 => '协助开单 (提成 2%)',
-                            ])
+                            ->options(function () {
+                                $setting = \App\Models\CommissionSetting::first();
+                                return [
+                                    1 => '自主开发 (提成 ' . ($setting->sales_type_1_rate ?? 3) . '%)',
+                                    2 => '康复续卡 (提成 ' . ($setting->sales_type_2_rate ?? 1) . '%)',
+                                    3 => '协助开单 (提成 ' . ($setting->sales_type_3_rate ?? 2) . '%)',
+                                ];
+                            })
                             ->nullable(),
                     ])
                     ->columns(2),
