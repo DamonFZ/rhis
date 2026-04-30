@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\CommissionSetting;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -63,5 +64,14 @@ class CommissionSettings extends Page implements HasForms
     {
         CommissionSetting::first()->update($this->form->getState());
         Notification::make()->title('提成设置已保存')->success()->send();
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label('保存设置')
+                ->submit('save'),
+        ];
     }
 }
