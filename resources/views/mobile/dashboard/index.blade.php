@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    <div class="px-5 -mt-12 grid grid-cols-2 gap-4">
+    <div class="px-5 -mt-12 grid grid-cols-2 gap-4 relative z-20">
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center aspect-[4/5]">
             <div class="mb-3">
                 <x-heroicon-o-rectangle-stack class="w-10 h-10 text-gray-600" />
