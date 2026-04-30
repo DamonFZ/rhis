@@ -5,12 +5,16 @@ namespace App\Filament\Pages;
 use App\Models\CommissionSetting;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 
-class CommissionSettings extends Page
+class CommissionSettings extends Page implements HasForms
 {
+    use InteractsWithForms;
+
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationGroup = '设置';
     protected static ?string $title = '提成设置';
