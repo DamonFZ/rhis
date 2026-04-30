@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PatientProfileResource\RelationManagers;
 
+use App\Models\CommissionSetting;
 use App\Models\ConsumptionRecord;
 use App\Models\PatientPackage;
 use App\Models\RehabPackage;
@@ -98,9 +99,9 @@ class ConsumptionRecordsRelationManager extends RelationManager
 
         $deductedSessions = $record->deducted_sessions;
 
-        $rehabPackage = RehabPackage::where('package_code', $patientPackage->package_code)->first();
-        // 增加兜底，防止没有设置基础提成
-        $baseCommission = $rehabPackage ? ($rehabPackage->commission_per_service ?? 0) : 0;
+        // 从全局提成设置中读取单次服务提成
+        $commissionSetting = CommissionSetting::first();
+        $baseCommission = $commissionSetting ? ($commissionSetting->service_commission ?? 15.00) : 15.00;
         $totalCommission = $baseCommission * $deductedSessions;
 
         $employeeCount = count($employeeIds);
