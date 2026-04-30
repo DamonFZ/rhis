@@ -26,6 +26,9 @@ class PatientPackage extends Model
         'is_shareable',
         'purchase_date',
         'expiry_date',
+        'salesperson_id',
+        'sales_type',
+        'sales_commission',
     ];
 
     protected $casts = [
@@ -36,6 +39,7 @@ class PatientPackage extends Model
         'is_shareable' => 'boolean',
         'purchase_date' => 'date',
         'expiry_date' => 'date',
+        'sales_commission' => 'decimal:2',
     ];
 
     protected static function booted(): void
@@ -50,6 +54,11 @@ class PatientPackage extends Model
     public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(PatientProfile::class, 'patient_profile_id');
+    }
+
+    public function salesperson(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'salesperson_id');
     }
 
     public function consumptionRecords(): \Illuminate\Database\Eloquent\Relations\HasMany

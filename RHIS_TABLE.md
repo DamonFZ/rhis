@@ -99,7 +99,7 @@
 | is_extendable    | boolean   | -   | 否    | false| 是否可延期                                                   |
 | extension_days   | int       | 11  | 否    | 0    | 可延期天数                                                   |
 | is_shareable     | boolean   | -   | 否    | false| 是否可共享                                                   |
-| commission_per_service | decimal | 10,2 | 否 | 0 | 单次服务提成金额 |
+| service_commission | decimal | 10,2 | 否 | 15.00 | 单次服务提成金额 |
 | created_at       | timestamp | -   | 是    | -    | 创建时间                                                    |
 | updated_at       | timestamp | -   | 是    | -    | 更新时间                                                    |
 
