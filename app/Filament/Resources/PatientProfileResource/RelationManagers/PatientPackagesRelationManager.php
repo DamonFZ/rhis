@@ -142,6 +142,20 @@ class PatientPackagesRelationManager extends RelationManager
                             ])
                             ->default('active')
                             ->required(),
+                        Forms\Components\Select::make('salesperson_id')
+                            ->relationship('salesperson', 'name')
+                            ->label('开单员工（销售）')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+                        Forms\Components\Select::make('sales_type')
+                            ->label('开单提成类型')
+                            ->options([
+                                1 => '自主开发 (提成 3%)',
+                                2 => '康复续卡 (提成 1%)',
+                                3 => '协助开单 (提成 2%)',
+                            ])
+                            ->nullable(),
                     ])
                     ->columns(2),
             ]);
@@ -201,6 +215,16 @@ class PatientPackagesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('salesperson.name')
+                    ->label('开单员工')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('sales_commission')
+                    ->label('销售提成(元)')
+                    ->money('CNY')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

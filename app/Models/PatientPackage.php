@@ -49,6 +49,22 @@ class PatientPackage extends Model
                 $package->purchase_date = now()->toDateString();
             }
         });
+
+        static::saving(function ($model) {
+            // 提成比例字典：1-自主开发(3%), 2-康复续卡(1%), 3-协助开单(2%)
+            $commissionRates = [
+                1 => 0.03,
+                2 => 0.01,
+                3 => 0.02,
+            ];
+
+            // 如果选择了开单类型，并且有价格，则自动计算提成金额
+            if ($model->sales_type && isset($commissionRates[$model->sales_type]) && $model->price > 0) {
+                $model->sales_commission = $model->price * $commissionRates[$model->sales_type];
+            } else {
+                $model->sales_commission = 0;
+            }
+        });
     }
 
     public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo
