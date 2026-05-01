@@ -77,4 +77,11 @@ class ConsumptionRecord extends Model
             ->withPivot('commission_amount')
             ->withTimestamps();
     }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'consumption_record_user')
+            ->withPivot('commission_amount')
+            ->withTimestamps();
+    }
 }
