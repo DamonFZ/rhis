@@ -42,6 +42,15 @@ class AuthController extends Controller
         $openid = app()->isLocal() ? $wechatUser : (is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null));
 
         if ($openid) {
+            // 检查该微信是否已绑定其他客户档案
+            $existingPatient = PatientProfile::where('wechat_openid', $openid)->where('id', '!=', $patient->id)->first();
+            if ($existingPatient) {
+                return view('mobile.bind-error', [
+                    'message' => '该微信已绑定客户 "' . ($existingPatient->name ?: $existingPatient->id) . '"，一个微信只能绑定一个客户档案。',
+                    'existingPatient' => $existingPatient
+                ]);
+            }
+
             // 写入 OpenID，并清空 token 使二维码立刻失效防复用
             $patient->update([
                 'wechat_openid' => $openid,
@@ -64,6 +73,16 @@ class AuthController extends Controller
         }
 
         $patient = PatientProfile::findOrFail($request->patient_id);
+
+        // 检查该微信是否已绑定其他客户档案
+        $existingPatient = PatientProfile::where('wechat_openid', $openid)->where('id', '!=', $patient->id)->first();
+        if ($existingPatient) {
+            return view('mobile.bind-error', [
+                'message' => '该微信已绑定客户 "' . ($existingPatient->name ?: $existingPatient->id) . '"，一个微信只能绑定一个客户档案。',
+                'existingPatient' => $existingPatient
+            ]);
+        }
+
         $patient->update([
             'wechat_openid' => $openid,
             'bind_token' => null // 绑定成功后立即使二维码失效
