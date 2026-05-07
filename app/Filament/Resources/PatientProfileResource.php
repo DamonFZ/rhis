@@ -17,7 +17,6 @@ use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\ActionsColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\DB;
@@ -169,6 +168,7 @@ class PatientProfileResource extends Resource
                     ->icon('heroicon-o-bolt')
                     ->color('warning')
                     ->modalWidth('md')
+                    ->extraAttributes(['class' => 'hidden'])
                     ->form([
                         Forms\Components\Select::make('patient_package_id')
                             ->label('选择有效套餐')
@@ -220,8 +220,7 @@ class PatientProfileResource extends Resource
                             $c->users()->sync(array_fill_keys($data['therapist_ids'], ['commission_amount' => $amt]));
                         });
                         Notification::make()->title('划扣成功')->success()->send();
-                    })
-                    ->extraAttributes(['class' => 'hidden']),
+                    }),
             ])
             ->bulkActions([
                 // 暂时屏蔽批量删除功能，防止员工误操作
