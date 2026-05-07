@@ -94,6 +94,68 @@ class PatientProfileResource extends Resource
                     ->label('建档日期')
                     ->date('Y-m-d')
                     ->sortable(),
+                Tables\Columns\ActionColumn::make('quick_deduct')
+                    ->label('快速划扣')
+                    ->width('100px')
+                    ->actions([
+                        Action::make('quick_deduct')
+                            ->label('快速划扣')
+                            ->icon('heroicon-o-bolt')
+                            ->color('warning')
+                            ->modalWidth('md')
+                            ->form([
+                                Forms\Components\Select::make('patient_package_id')
+                                    ->label('选择有效套餐')
+                                    ->options(fn (PatientProfile $record) => $record->patientPackages()->where('status', 'active')->where('remaining_sessions', '>', 0)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->package_name} (剩:{$p->remaining_sessions}次)"]))
+                                    ->required()
+                                    ->reactive(),
+                                Forms\Components\TextInput::make('deducted_sessions')
+                                    ->label('扣减次数')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->rule(fn ($get) => function ($attr, $val, $fail) use ($get) {
+                                        $p = PatientPackage::find($get('patient_package_id'));
+                                        if ($p && $val > $p->remaining_sessions) $fail("最多只能扣 {$p->remaining_sessions} 次");
+                                    }),
+                                Forms\Components\Select::make('therapist_ids')
+                                    ->label('服务康复师')
+                                    ->options(User::pluck('name', 'id'))
+                                    ->multiple()
+                                    ->required(),
+                                Forms\Components\DatePicker::make('treatment_date')
+                                    ->label('日期')
+                                    ->default(now())
+                                    ->required(),
+                                Forms\Components\Textarea::make('treatment_content')
+                                    ->label('康复内容')
+                                    ->rows(2),
+                            ])
+                            ->action(function (array $data, PatientProfile $record) {
+                                DB::transaction(function () use ($data, $record) {
+                                    $p = PatientPackage::lockForUpdate()->findOrFail($data['patient_package_id']);
+                                    if ($p->remaining_sessions < $data['deducted_sessions']) throw new \Exception('次数不足');
+
+                                    $p->remaining_sessions -= $data['deducted_sessions'];
+                                    if ($p->remaining_sessions <= 0) $p->status = 'completed';
+                                    $p->save();
+
+                                    $c = \App\Models\ConsumptionRecord::create([
+                                        'patient_profile_id' => $record->id,
+                                        'patient_package_id' => $p->id,
+                                        'package_name' => $p->package_name,
+                                        'deducted_sessions' => $data['deducted_sessions'],
+                                        'remaining_sessions' => $p->remaining_sessions,
+                                        'treatment_date' => $data['treatment_date'],
+                                        'treatment_content' => $data['treatment_content'],
+                                    ]);
+
+                                    $amt = CommissionSetting::first()->service_commission ?? 15.00;
+                                    $c->users()->sync(array_fill_keys($data['therapist_ids'], ['commission_amount' => $amt]));
+                                });
+                                Notification::make()->title('划扣成功')->success()->send();
+                            }),
+                    ]),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
@@ -156,63 +218,6 @@ class PatientProfileResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Action::make('quick_deduct')
-                    ->label('快速划扣')
-                    ->icon('heroicon-o-bolt')
-                    ->color('warning')
-                    ->modalWidth('md')
-                    ->form([
-                        Forms\Components\Select::make('patient_package_id')
-                            ->label('选择有效套餐')
-                            ->options(fn (PatientProfile $record) => $record->patientPackages()->where('status', 'active')->where('remaining_sessions', '>', 0)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->package_name} (剩:{$p->remaining_sessions}次)"]))
-                            ->required()
-                            ->reactive(),
-                        Forms\Components\TextInput::make('deducted_sessions')
-                            ->label('扣减次数')
-                            ->numeric()
-                            ->default(1)
-                            ->required()
-                            ->rule(fn ($get) => function ($attr, $val, $fail) use ($get) {
-                                $p = PatientPackage::find($get('patient_package_id'));
-                                if ($p && $val > $p->remaining_sessions) $fail("最多只能扣 {$p->remaining_sessions} 次");
-                            }),
-                        Forms\Components\Select::make('therapist_ids')
-                            ->label('服务康复师')
-                            ->options(User::pluck('name', 'id'))
-                            ->multiple()
-                            ->required(),
-                        Forms\Components\DatePicker::make('treatment_date')
-                            ->label('日期')
-                            ->default(now())
-                            ->required(),
-                        Forms\Components\Textarea::make('treatment_content')
-                            ->label('康复内容')
-                            ->rows(2),
-                    ])
-                    ->action(function (array $data, PatientProfile $record) {
-                        DB::transaction(function () use ($data, $record) {
-                            $p = PatientPackage::lockForUpdate()->findOrFail($data['patient_package_id']);
-                            if ($p->remaining_sessions < $data['deducted_sessions']) throw new \Exception('次数不足');
-
-                            $p->remaining_sessions -= $data['deducted_sessions'];
-                            if ($p->remaining_sessions <= 0) $p->status = 'completed';
-                            $p->save();
-
-                            $c = \App\Models\ConsumptionRecord::create([
-                                'patient_profile_id' => $record->id,
-                                'patient_package_id' => $p->id,
-                                'package_name' => $p->package_name,
-                                'deducted_sessions' => $data['deducted_sessions'],
-                                'remaining_sessions' => $p->remaining_sessions,
-                                'treatment_date' => $data['treatment_date'],
-                                'treatment_content' => $data['treatment_content'],
-                            ]);
-
-                            $amt = CommissionSetting::first()->service_commission ?? 15.00;
-                            $c->users()->sync(array_fill_keys($data['therapist_ids'], ['commission_amount' => $amt]));
-                        });
-                        Notification::make()->title('划扣成功')->success()->send();
-                    }),
             ])
             ->bulkActions([
                 // 暂时屏蔽批量删除功能，防止员工误操作
