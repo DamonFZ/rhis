@@ -162,6 +162,21 @@ class EmployeeCommissionReport extends Page implements HasTable
                         return '统计月份: ' . $monthParts[0] . '年' . $monthParts[1] . '月';
                     }),
             ])
+            ->headerActions([
+                \Filament\Tables\Actions\Action::make('export_excel')
+                    ->label('导出 Excel')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($livewire) {
+                        $month = $this->selectedMonth ?? now()->format('Y-m');
+
+                        $fileName = "员工提成报表_{$month}.xlsx";
+                        return \Maatwebsite\Excel\Facades\Excel::download(
+                            new \App\Exports\EmployeeCommissionExport($month),
+                            $fileName
+                        );
+                    }),
+            ])
             ->actions([
                 Action::make('view_details')
                     ->label('查看详情')
