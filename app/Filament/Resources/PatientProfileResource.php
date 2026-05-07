@@ -101,7 +101,7 @@ class PatientProfileResource extends Resource
                     ->color('warning')
                     ->weight('bold')
                     ->extraAttributes(['class' => 'cursor-pointer hover:underline'])
-                    ->action('quick_deduct'),
+                    ->action(fn ($record, $livewire) => $livewire->mountTableAction('quick_deduct', $record)),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
