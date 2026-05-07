@@ -134,23 +134,22 @@ class PatientProfileResource extends Resource
                             ])
                             ->action(function (array $data, PatientProfile $record) {
                                 DB::transaction(function () use ($data, $record) {
+                                    // 检查套餐次数是否足够
                                     $p = PatientPackage::lockForUpdate()->findOrFail($data['patient_package_id']);
-                                    if ($p->remaining_sessions < $data['deducted_sessions']) throw new \Exception('次数不足');
+                                    if ($p->remaining_sessions < $data['deducted_sessions']) {
+                                        throw new \Exception('次数不足');
+                                    }
 
-                                    $p->remaining_sessions -= $data['deducted_sessions'];
-                                    if ($p->remaining_sessions <= 0) $p->status = 'completed';
-                                    $p->save();
-
+                                    // 创建消费记录，模型中的 creating 钩子会自动扣减套餐剩余次数
                                     $c = \App\Models\ConsumptionRecord::create([
                                         'patient_profile_id' => $record->id,
                                         'patient_package_id' => $p->id,
-                                        'package_name' => $p->package_name,
                                         'deducted_sessions' => $data['deducted_sessions'],
-                                        'remaining_sessions' => $p->remaining_sessions,
                                         'treatment_date' => $data['treatment_date'],
                                         'treatment_content' => $data['treatment_content'],
                                     ]);
 
+                                    // 计算员工提成
                                     $amt = CommissionSetting::first()->service_commission ?? 15.00;
                                     $c->users()->sync(array_fill_keys($data['therapist_ids'], ['commission_amount' => $amt]));
                                 });
