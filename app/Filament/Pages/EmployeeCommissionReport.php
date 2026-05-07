@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\User;
 use App\Models\ConsumptionRecord;
+use App\Models\PatientPackage;
 use Filament\Forms\Components\DatePicker;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\Action;
@@ -44,8 +45,8 @@ class EmployeeCommissionReport extends Page implements HasTable
                     ->label('员工姓名')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('total_commission')
-                    ->label('月度总提成')
+                TextColumn::make('service_commission')
+                    ->label('服务提成')
                     ->money('CNY')
                     ->sortable()
                     ->getStateUsing(function (User $record) {
@@ -53,7 +54,6 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $year = $monthParts[0];
                         $month = $monthParts[1];
                         
-                        // 使用 pivot 表直接计算提成
                         $records = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
@@ -67,6 +67,49 @@ class EmployeeCommissionReport extends Page implements HasTable
                         
                         return $total;
                     }),
+                TextColumn::make('sales_commission')
+                    ->label('销售提成')
+                    ->money('CNY')
+                    ->sortable()
+                    ->getStateUsing(function (User $record) {
+                        $monthParts = explode('-', $this->selectedMonth);
+                        $year = $monthParts[0];
+                        $month = $monthParts[1];
+                        
+                        return PatientPackage::where('salesperson_id', $record->id)
+                            ->whereYear('purchase_date', $year)
+                            ->whereMonth('purchase_date', $month)
+                            ->sum('sales_commission');
+                    }),
+                TextColumn::make('total_commission')
+                    ->label('月度总提成')
+                    ->money('CNY')
+                    ->sortable()
+                    ->getStateUsing(function (User $record) {
+                        $monthParts = explode('-', $this->selectedMonth);
+                        $year = $monthParts[0];
+                        $month = $monthParts[1];
+                        
+                        // 服务提成
+                        $records = $record->consumptionRecords()
+                            ->whereYear('treatment_date', $year)
+                            ->whereMonth('treatment_date', $month)
+                            ->get();
+                        
+                        $serviceTotal = 0;
+                        foreach ($records as $cr) {
+                            $pivot = $cr->pivot;
+                            $serviceTotal += $pivot ? $pivot->commission_amount : 0;
+                        }
+                        
+                        // 销售提成
+                        $salesTotal = PatientPackage::where('salesperson_id', $record->id)
+                            ->whereYear('purchase_date', $year)
+                            ->whereMonth('purchase_date', $month)
+                            ->sum('sales_commission');
+                        
+                        return $serviceTotal + $salesTotal;
+                    }),
                 TextColumn::make('service_count')
                     ->label('服务次数')
                     ->sortable()
@@ -78,6 +121,19 @@ class EmployeeCommissionReport extends Page implements HasTable
                         return $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
+                            ->count();
+                    }),
+                TextColumn::make('sales_count')
+                    ->label('销售单数')
+                    ->sortable()
+                    ->getStateUsing(function (User $record) {
+                        $monthParts = explode('-', $this->selectedMonth);
+                        $year = $monthParts[0];
+                        $month = $monthParts[1];
+                        
+                        return PatientPackage::where('salesperson_id', $record->id)
+                            ->whereYear('purchase_date', $year)
+                            ->whereMonth('purchase_date', $month)
                             ->count();
                     }),
             ])
@@ -117,7 +173,15 @@ class EmployeeCommissionReport extends Page implements HasTable
                         \Filament\Forms\Components\TextInput::make('month')
                             ->label('统计月份')
                             ->disabled(),
-                        \Filament\Forms\Components\Repeater::make('records')
+                        \Filament\Forms\Components\TextInput::make('service_commission')
+                            ->label('服务提成')
+                            ->prefix('¥')
+                            ->disabled(),
+                        \Filament\Forms\Components\TextInput::make('sales_commission')
+                            ->label('销售提成')
+                            ->prefix('¥')
+                            ->disabled(),
+                        \Filament\Forms\Components\Repeater::make('service_records')
                             ->label('服务记录明细')
                             ->schema([
                                 \Filament\Forms\Components\TextInput::make('patient_name')
@@ -137,21 +201,45 @@ class EmployeeCommissionReport extends Page implements HasTable
                             ->addable(false)
                             ->deletable(false)
                             ->helperText('显示该员工当月的所有服务记录明细'),
+                        \Filament\Forms\Components\Repeater::make('sales_records')
+                            ->label('销售记录明细')
+                            ->schema([
+                                \Filament\Forms\Components\TextInput::make('patient_name')
+                                    ->label('客户姓名'),
+                                \Filament\Forms\Components\TextInput::make('package_name')
+                                    ->label('套餐名称'),
+                                \Filament\Forms\Components\TextInput::make('sales_type')
+                                    ->label('销售类型'),
+                                \Filament\Forms\Components\TextInput::make('price')
+                                    ->label('套餐价格')
+                                    ->prefix('¥'),
+                                \Filament\Forms\Components\TextInput::make('commission_amount')
+                                    ->label('本次提成')
+                                    ->prefix('¥'),
+                            ])
+                            ->columns(3)
+                            ->reorderable(false)
+                            ->addable(false)
+                            ->deletable(false)
+                            ->helperText('显示该员工当月的所有销售记录明细'),
                     ])
                     ->fillForm(function (User $record) {
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
                         
-                        $records = $record->consumptionRecords()
+                        // 服务记录
+                        $consumptionRecords = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
                             ->with(['patient', 'patientPackage'])
                             ->get();
                         
-                        $details = [];
-                        foreach ($records as $consumption) {
-                            $details[] = [
+                        $serviceDetails = [];
+                        $serviceTotal = 0;
+                        foreach ($consumptionRecords as $consumption) {
+                            $serviceTotal += $consumption->pivot->commission_amount;
+                            $serviceDetails[] = [
                                 'patient_name' => $consumption->patient ? $consumption->patient->name : '未知',
                                 'package_name' => $consumption->patientPackage ? $consumption->patientPackage->package_name : '未知',
                                 'treatment_date' => $consumption->treatment_date->format('Y-m-d'),
@@ -160,10 +248,38 @@ class EmployeeCommissionReport extends Page implements HasTable
                             ];
                         }
                         
+                        // 销售记录
+                        $salesRecords = PatientPackage::where('salesperson_id', $record->id)
+                            ->whereYear('purchase_date', $year)
+                            ->whereMonth('purchase_date', $month)
+                            ->with('patient')
+                            ->get();
+                        
+                        $salesDetails = [];
+                        $salesTotal = 0;
+                        $salesTypeLabels = [
+                            1 => '自主开发',
+                            2 => '康复续卡',
+                            3 => '协助开单',
+                        ];
+                        foreach ($salesRecords as $sale) {
+                            $salesTotal += $sale->sales_commission;
+                            $salesDetails[] = [
+                                'patient_name' => $sale->patient ? $sale->patient->name : '未知',
+                                'package_name' => $sale->package_name,
+                                'sales_type' => isset($salesTypeLabels[$sale->sales_type]) ? $salesTypeLabels[$sale->sales_type] : '-',
+                                'price' => $sale->price,
+                                'commission_amount' => $sale->sales_commission,
+                            ];
+                        }
+                        
                         return [
                             'employee_name' => $record->name,
                             'month' => $year . '年' . $month . '月',
-                            'records' => $details,
+                            'service_commission' => $serviceTotal,
+                            'sales_commission' => $salesTotal,
+                            'service_records' => $serviceDetails,
+                            'sales_records' => $salesDetails,
                         ];
                     })
                     ->modalSubmitAction(false)
