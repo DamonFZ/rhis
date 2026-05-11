@@ -247,6 +247,62 @@ class PatientPackagesRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\Action::make('upgrade')
+                    ->label('升级套餐')
+                    ->icon('heroicon-o-arrow-trending-up')
+                    ->color('success')
+                    ->visible(fn (\App\Models\PatientPackage $record) => $record->status === 'active')
+                    ->modalWidth('md')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('new_id')
+                            ->label('新套餐')
+                            ->options(\App\Models\RehabPackage::where('status',1)->pluck('name','id'))
+                            ->required(),
+                        \Filament\Forms\Components\TextInput::make('diff')
+                            ->label('补差价金额')
+                            ->numeric()
+                            ->required(),
+                        \Filament\Forms\Components\Select::make('sales_id')
+                            ->label('升单员工')
+                            ->options(\App\Models\User::pluck('name','id'))
+                            ->required(),
+                        \Filament\Forms\Components\Select::make('sales_type')
+                            ->label('提成类型')
+                            ->options([1=>'自主开发',2=>'康复续卡',3=>'协助开单'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data, \App\Models\PatientPackage $record) {
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record) {
+                            $used = $record->total_sessions - $record->remaining_sessions;
+                            $record->update(['status' => 'upgraded', 'remaining_sessions' => 0]);
+
+                            $newR = \App\Models\RehabPackage::findOrFail($data['new_id']);
+                            $set = \App\Models\CommissionSetting::first();
+                            $rates = [1 => $set->sales_type_1_rate/100, 2 => $set->sales_type_2_rate/100, 3 => $set->sales_type_3_rate/100];
+
+                            $newP = \App\Models\PatientPackage::create([
+                                'patient_profile_id' => $record->patient_profile_id, 'package_code' => $newR->package_code,
+                                'package_name' => $newR->name, 'package_type' => $newR->package_type,
+                                'total_sessions' => $newR->total_sessions, 'remaining_sessions' => $newR->total_sessions - $used,
+                                'price' => $newR->price, 'original_price' => $newR->original_price, 'average_price' => $newR->average_price,
+                                'status' => 'active', 'is_extendable' => $newR->is_extendable, 'extension_days' => $newR->extension_days,
+                                'is_shareable' => $newR->is_shareable, 'purchase_date' => now(),
+                                'expiry_date' => now()->addDays($newR->validity_days + $newR->extension_days),
+                                'salesperson_id' => $data['sales_id'], 'sales_type' => $data['sales_type'],
+                                'sales_commission' => $data['diff'] * ($rates[$data['sales_type']] ?? 0.03),
+                            ]);
+
+                            if ($used > 0) {
+                                \App\Models\ConsumptionRecord::create([
+                                    'patient_profile_id' => $record->patient_profile_id, 'patient_package_id' => $newP->id,
+                                    'package_name' => $newP->package_name, 'deducted_sessions' => $used,
+                                    'remaining_sessions' => $newP->remaining_sessions, 'treatment_date' => now(),
+                                    'treatment_content' => "系统结转：套餐升级，扣除原套餐已用 {$used} 次",
+                                ]);
+                            }
+                        });
+                        \Filament\Notifications\Notification::make()->title('套餐升级完成')->success()->send();
+                    }),
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([
