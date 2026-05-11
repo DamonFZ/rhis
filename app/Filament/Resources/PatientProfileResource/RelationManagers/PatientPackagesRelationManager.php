@@ -257,11 +257,41 @@ class PatientPackagesRelationManager extends RelationManager
                         \Filament\Forms\Components\Select::make('new_id')
                             ->label('新套餐')
                             ->options(\App\Models\RehabPackage::where('status',1)->pluck('name','id'))
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state, $livewire) {
+                                if ($state && method_exists($livewire, 'getMountedTableActionRecord')) {
+                                    $record = $livewire->getMountedTableActionRecord();
+                                    if ($record) {
+                                        $newR = \App\Models\RehabPackage::find($state);
+                                        if ($newR) {
+                                            $diff = $newR->price - $record->price;
+                                            $set('diff', max(0, round($diff, 2)));
+                                        }
+                                    }
+                                }
+                            }),
                         \Filament\Forms\Components\TextInput::make('diff')
                             ->label('补差价金额')
                             ->numeric()
-                            ->required(),
+                            ->prefix('¥')
+                            ->required()
+                            ->hint('自动计算：新套餐价 - 原套餐价，可手动修改')
+                            ->default(function (callable $get, $livewire) {
+                                if (method_exists($livewire, 'getMountedTableActionRecord')) {
+                                    $record = $livewire->getMountedTableActionRecord();
+                                    if ($record) {
+                                        $newId = $get('new_id');
+                                        if ($newId) {
+                                            $newR = \App\Models\RehabPackage::find($newId);
+                                            if ($newR) {
+                                                return max(0, round($newR->price - $record->price, 2));
+                                            }
+                                        }
+                                    }
+                                }
+                                return null;
+                            }),
                         \Filament\Forms\Components\Select::make('sales_id')
                             ->label('升单员工')
                             ->options(\App\Models\User::pluck('name','id'))
