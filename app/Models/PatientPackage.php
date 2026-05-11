@@ -51,6 +51,7 @@ class PatientPackage extends Model
         });
 
         static::saving(function ($model) {
+            if ($model->isDirty('sales_commission') && $model->sales_commission > 0) return;
             $setting = \App\Models\CommissionSetting::first();
             // 将百分比转换为小数计算
             $commissionRates = [

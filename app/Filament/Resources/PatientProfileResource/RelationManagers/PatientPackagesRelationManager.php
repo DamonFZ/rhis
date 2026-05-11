@@ -206,13 +206,15 @@ class PatientPackagesRelationManager extends RelationManager
                     ->label('状态')
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'active' => '有效',
-                        'completed' => '已完成',
+                        'completed' => '已用完',
+                        'upgraded' => '已升级',
                         default => $state,
                     })
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         'active' => 'success',
                         'completed' => 'gray',
+                        'upgraded' => 'warning',
                         default => 'primary',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
