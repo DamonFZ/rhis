@@ -156,6 +156,73 @@ class PatientProfileResource extends Resource
                                 Notification::make()->title('划扣成功')->success()->send();
                             })
                     ),
+                \Filament\Tables\Columns\TextColumn::make('buy_package_trigger' )
+                    ->label('购买套餐' )
+                    ->state(fn ( ) => '🛒 购买套餐')
+                    ->color('success' )
+                    ->weight('bold' )
+                    ->extraAttributes(['class' => 'cursor-pointer hover:underline'] )
+                    ->action(
+                        \Filament\Tables\Actions\Action::make('buy_package_modal' )
+                            ->modalHeading('为客户办理新套餐' )
+                            ->modalWidth('md' )
+                            ->form( [
+                                \Filament\Forms\Components\Select::make('rehab_package_id' )
+                                    ->label('选择康复套餐' )
+                                    ->options(\App\Models\RehabPackage::where('status', 1)->pluck('name', 'id') )
+                                    ->required( )
+                                    ->searchable( ),
+                                \Filament\Forms\Components\Select::make('salesperson_id' )
+                                    ->label('开单员工（销售）' )
+                                    ->options(\App\Models\User::pluck('name', 'id') )
+                                    ->required( )
+                                    ->searchable( ),
+                                \Filament\Forms\Components\Select::make('sales_type' )
+                                    ->label('提成类型' )
+                                    ->options(function ( ) {
+                                        $setting = \App\Models\CommissionSetting::first( );
+                                        return  [
+                                            1 => '自主开发 (' . ($setting->sales_type_1_rate ?? 3) . '%)' ,
+                                            2 => '康复续卡 (' . ($setting->sales_type_2_rate ?? 1) . '%)' ,
+                                            3 => '协助开单 (' . ($setting->sales_type_3_rate ?? 2) . '%)' ,
+                                        ];
+                                    } )
+                                    ->required( ),
+                            ] )
+                            ->action(function (array $data, \App\Models\PatientProfile $record ) {
+                                \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record ) {
+                                    $rehabPkg = \App\Models\RehabPackage::findOrFail($data['rehab_package_id'] );
+                                    $setting = \App\Models\CommissionSetting::first( );
+                                    $rates  = [
+                                        1 => ($setting->sales_type_1_rate ?? 3) / 100 ,
+                                        2 => ($setting->sales_type_2_rate ?? 1) / 100 ,
+                                        3 => ($setting->sales_type_3_rate ?? 2) / 100 ,
+                                    ];
+
+                                    \App\Models\PatientPackage::create( [
+                                        'patient_profile_id' => $record ->id,
+                                        'package_code'       => $rehabPkg ->package_code,
+                                        'package_name'       => $rehabPkg ->name,
+                                        'package_type'       => $rehabPkg ->package_type,
+                                        'total_sessions'     => $rehabPkg ->total_sessions,
+                                        'remaining_sessions' => $rehabPkg ->total_sessions,
+                                        'price'              => $rehabPkg ->price,
+                                        'original_price'     => $rehabPkg ->original_price,
+                                        'average_price'      => $rehabPkg ->average_price,
+                                        'status'             => 'active' ,
+                                        'is_extendable'      => $rehabPkg ->is_extendable,
+                                        'extension_days'     => $rehabPkg ->extension_days,
+                                        'is_shareable'       => $rehabPkg ->is_shareable,
+                                        'purchase_date'      => now( ),
+                                        'expiry_date'        => now()->addDays($rehabPkg->validity_days + $rehabPkg->extension_days ),
+                                        'salesperson_id'     => $data['salesperson_id' ],
+                                        'sales_type'         => $data['sales_type' ],
+                                        'sales_commission'   => $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03 ),
+                                    ] );
+                                } );
+                                \Filament\Notifications\Notification::make()->title('套餐购买成功')->success()->send( );
+                            } )
+                    ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
