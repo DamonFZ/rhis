@@ -51,14 +51,14 @@
                                 @endphp
                                 <div class="p-2 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                     @if ($photoUrl)
-                                        <div class="relative w-full aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center hover:ring-2 hover:ring-primary-500 transition-all">
+                                        <div class="relative w-full bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center hover:ring-2 hover:ring-primary-500 transition-all" style="aspect-ratio: 3 / 4;">
                                             <img src="{{ $photoUrl }}"
                                                  class="absolute inset-0 w-full h-full object-contain p-1 cursor-pointer transition-transform hover:scale-105"
                                                  alt="康复影像"
                                                  x-on:click="$dispatch('open-image-modal', '{{ $photoUrl }}')">
                                         </div>
                                     @else
-                                        <div class="relative w-full aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
+                                        <div class="relative w-full bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center" style="aspect-ratio: 3 / 4;">
                                             <span class="text-gray-400">暂无照片</span>
                                         </div>
                                     @endif
