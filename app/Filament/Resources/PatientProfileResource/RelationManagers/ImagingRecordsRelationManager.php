@@ -9,11 +9,29 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImagingRecordsRelationManager extends RelationManager
 {
     protected static string $relationship = 'imagingRecords';
     protected static ?string $title = '康复记录';
+
+    private function createCompressedImageUploader(string $filename): \Closure
+    {
+        return function (TemporaryUploadedFile $file) use ($filename): string {
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
+            $image->scaleDown(width: 1080);
+            $encoded = $image->toWebp(50);
+            $path = 'imaging/' . date('Y/m/d') . '/' . $filename . '_' . Str::random(32) . '.webp';
+            Storage::disk('public')->put($path, $encoded->toString());
+            return $path;
+        };
+    }
 
     public function form(Form $form): Form
     {
@@ -106,44 +124,32 @@ class ImagingRecordsRelationManager extends RelationManager
                                 Forms\Components\FileUpload::make('photo_urls.front')
                                     ->label('站姿正面')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('front'))
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.forward_bending')
                                     ->label('站姿弯腰正面')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('forward_bending'))
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.back')
                                     ->label('站姿背面')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back'))
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.left_side')
                                     ->label('站姿侧面')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('left_side'))
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.right_side')
                                     ->label('侧面弯腰')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('right_side'))
                                     ->required(),
                                 Forms\Components\FileUpload::make('photo_urls.back_sitting')
                                     ->label('坐姿背面')
                                     ->image()
-                                    ->imageResizeTargetWidth(1080)
-                                    ->imageResizeTargetHeight(1080)
-                                    ->directory('imaging')
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back_sitting'))
                                     ->required(),
                             ]),
                     ]),
