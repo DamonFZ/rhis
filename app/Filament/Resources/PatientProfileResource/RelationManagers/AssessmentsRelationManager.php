@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Redirect;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AssessmentsRelationManager extends RelationManager
 {
@@ -234,11 +236,22 @@ class AssessmentsRelationManager extends RelationManager
                             ->dehydrateStateUsing(function ($state) {
                                 if (blank($state)) return null;
                                 if (str_starts_with($state, 'data:image')) {
-                                    @list($type, $file_data) = explode(';', $state);
-                                    @list(, $file_data) = explode(',', $file_data);
-                                    $imageName = 'assessments/canvas_' . Str::random(10) . '_' . time() . '.jpg';
-                                    Storage::disk('public')->put($imageName, base64_decode($file_data));
-                                    return $imageName;
+                                    $imageParts = explode(';', $state);
+                                    $base64Data = explode(',', $state)[1] ?? null;
+                                    if (!$base64Data) return null;
+
+                                    $imageBase64 = base64_decode($base64Data);
+                                    $manager = new ImageManager(new Driver());
+
+                                    $image = $manager->read($imageBase64)
+                                        ->scaleDown(width: 800);
+
+                                    $encodedData = $image->toWebp(80)->toString();
+
+                                    $fileName = 'canvas_' . Str::random(10) . '_' . time() . '.webp';
+                                    $filePath = 'assessments/' . $fileName;
+                                    Storage::disk('public')->put($filePath, $encodedData);
+                                    return $filePath;
                                 }
                                 return $state;
                             })
