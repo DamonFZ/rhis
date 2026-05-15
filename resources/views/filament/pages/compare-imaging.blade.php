@@ -54,7 +54,7 @@
                                         <div class="w-full" style="aspect-ratio: 3/4;">
                                             <div class="flex items-center justify-center overflow-hidden w-full h-full bg-gray-100 rounded-lg border border-gray-200 hover:ring-2 hover:ring-primary-500 transition-all">
                                                 <img src="{{ $photoUrl }}"
-                                                     class="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-sm cursor-pointer transition-transform hover:scale-105"
+                                                     class="w-full h-auto object-contain rounded-lg shadow-sm cursor-pointer transition-transform hover:scale-105"
                                                      alt="康复影像"
                                                      x-on:click="$dispatch('open-image-modal', '{{ $photoUrl }}')">
                                             </div>

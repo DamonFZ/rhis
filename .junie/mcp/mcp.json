@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/www/server/php/81/bin/php",
+            "args": [
+                "/www/wwwroot/linshe/rhis/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}

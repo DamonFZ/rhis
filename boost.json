@@ -1,0 +1,13 @@
+{
+    "agents": [
+        "opencode",
+        "phpstorm"
+    ],
+    "editors": [
+        "phpstorm",
+        "vscode"
+    ],
+    "guidelines": [
+        "filament/filament"
+    ]
+}
