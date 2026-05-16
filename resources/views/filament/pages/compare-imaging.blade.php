@@ -38,7 +38,7 @@
                             </div>
                         @endforeach
                     </div>
-                    
+
                     {{-- 照片行 --}}
                     @foreach ($photoLabels as $photoKey => $photoLabel)
                         <div class="flex">
@@ -53,7 +53,7 @@
                                     @if ($photoUrl)
                                         <div class="relative w-full bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center hover:ring-2 hover:ring-primary-500 transition-all" style="aspect-ratio: 3 / 4;">
                                             <img src="{{ $photoUrl }}"
-                                                 class="absolute inset-0 w-full h-full object-contain p-1 cursor-pointer transition-transform hover:scale-105"
+                                                 class="absolute inset-0 aspect-video object-cover w-full h-full object-contain p-1 cursor-pointer transition-transform hover:scale-105"
                                                  alt="康复影像"
                                                  x-on:click="$dispatch('open-image-modal', '{{ $photoUrl }}')">
                                         </div>
@@ -66,7 +66,7 @@
                             @endforeach
                         </div>
                     @endforeach
-                    
+
                     {{-- 备注行 --}}
                     <div class="flex">
                         <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">
@@ -78,7 +78,7 @@
                             </div>
                         @endforeach
                     </div>
-                    
+
                     {{-- 视频行 --}}
                     <div class="flex">
                         <div class="w-36 shrink-0 p-4 border-r border-gray-200 bg-gray-50 font-medium text-gray-800 flex items-center">
@@ -90,9 +90,9 @@
                             @endphp
                             <div class="p-4 border-r border-gray-200 last:border-r-0" style="min-width: 280px;">
                                 @if ($videoUrl)
-                                    <video 
-                                        src="{{ $videoUrl }}" 
-                                        controls 
+                                    <video
+                                        src="{{ $videoUrl }}"
+                                        controls
                                         class="w-full rounded-lg border border-gray-200 print:max-w-full"
                                     ></video>
                                 @else
@@ -104,7 +104,7 @@
                 </div>
             </div>
         @endif
-        
+
         <div class="flex gap-4 print:hidden">
             <a href="{{ url()->previous() }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,31 +114,31 @@
             </a>
         </div>
     </div>
-    
+
     {{-- 图片模态框 - 使用 Alpine.js 和 x-teleport --}}
-    <div x-data="{ isModalOpen: false, modalImageUrl: '' }" 
-         @open-image-modal.window="modalImageUrl = $event.detail; isModalOpen = true" 
+    <div x-data="{ isModalOpen: false, modalImageUrl: '' }"
+         @open-image-modal.window="modalImageUrl = $event.detail; isModalOpen = true"
          @keydown.escape.window="isModalOpen = false">
 
-        <template x-teleport="body"> 
-            <div x-show="isModalOpen" 
-                 class="fixed inset-0 flex items-center justify-center p-4 md:p-8" 
-                 style="display: none; z-index: 999999; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);" 
-                 x-transition.opacity.duration.300ms 
-                 @click="isModalOpen = false" 
+        <template x-teleport="body">
+            <div x-show="isModalOpen"
+                 class="fixed inset-0 flex items-center justify-center p-4 md:p-8"
+                 style="display: none; z-index: 999999; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"
+                 x-transition.opacity.duration.300ms
+                 @click="isModalOpen = false"
                  x-cloak>
-                
-                <button class="absolute top-6 right-6 text-white transition-transform hover:scale-110" 
-                        style="z-index: 1000000; opacity: 0.7;" 
-                        onmouseover="this.style.opacity='1'" 
+
+                <button class="absolute top-6 right-6 text-white transition-transform hover:scale-110"
+                        style="z-index: 1000000; opacity: 0.7;"
+                        onmouseover="this.style.opacity='1'"
                         onmouseout="this.style.opacity='0.7'">
                     <svg class="w-12 h-12" style="filter: drop-shadow(0 4px 3px rgba(0,0,0,0.5));" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
 
-                <img :src="modalImageUrl" 
-                     class="block rounded-lg" 
-                     style="max-width: 95vw; max-height: 95vh; width: auto; height: auto; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); outline: 1px solid rgba(255,255,255,0.15);" 
-                     alt="全屏预览" 
+                <img :src="modalImageUrl"
+                     class="block rounded-lg"
+                     style="max-width: 95vw; max-height: 95vh; width: auto; height: auto; object-fit: contain; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); outline: 1px solid rgba(255,255,255,0.15);"
+                     alt="全屏预览"
                      @click.stop>
             </div>
         </template>
