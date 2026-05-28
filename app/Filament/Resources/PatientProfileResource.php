@@ -292,6 +292,7 @@ class PatientProfileResource extends Resource
                 //     Tables\Actions\DeleteBulkAction::make(),
                 // ]),
             ])
+            ->recordUrl(fn ($record) => static::getUrl('edit', ['record' => $record]))
             ->defaultSort('join_date', 'desc');
     }
 
