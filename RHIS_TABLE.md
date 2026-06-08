@@ -319,6 +319,32 @@
 
 ---
 
+## 14. appointments（预约表）
+
+| 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                    |
+| ------------------- | --------- | --- | ----- | --- | --------------------- |
+| id                  | bigint    | 20  | 否    | 自增  | 主键                    |
+| patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                |
+| therapist_id        | bigint    | 20  | 否    | -   | 关联康复师ID（users表）        |
+| start_time          | datetime  | -   | 否    | -   | 预约开始时间               |
+| end_time            | datetime  | -   | 否    | -   | 预约结束时间               |
+| remark              | text      | -   | 是    | -   | 预约备注                  |
+| status              | tinyint   | 1   | 否    | 1   | 状态：0-已取消，1-已预约，2-已履约 |
+| created_at          | timestamp | -   | 是    | -   | 创建时间                  |
+| updated_at          | timestamp | -   | 是    | -   | 更新时间                  |
+
+**外键：**
+- `patient_profile_id` → `patient_profiles.id`（级联删除）
+- `therapist_id` → `users.id`（级联删除）
+
+**索引：** `(start_time, end_time)`, `(patient_profile_id, therapist_id)`
+
+**关联关系：**
+- 属于 `patientProfile`（belongsTo）
+- 属于 `therapist`（belongsTo，指向 users 表）
+
+---
+
 ## 已删除的表
 
 - ~~charge_items（收费项目表）~~ - 已于 2026-04-17 移除，相关功能已整合至康复套餐表
@@ -340,7 +366,9 @@ patient_profiles ────< physical_assessments
        │
        ├───────< imaging_records
        │
-       └───────< patient_packages ────< consumption_records
+       ├───────< patient_packages ────< consumption_records
+       │
+       └───────< appointments
 ```
 
 **设计说明：**
@@ -350,4 +378,4 @@ patient_profiles ────< physical_assessments
 
 ---
 
-*最后更新：2026-04-30*
+*最后更新：2026-06-08*
