@@ -223,6 +223,98 @@ class PatientProfileResource extends Resource
                                 \Filament\Notifications\Notification::make()->title('套餐购买成功')->success()->send( );
                             } )
                     ),
+                \Filament\Tables\Columns\TextColumn::make('single_session_trigger')
+                    ->label('散客收银')
+                    ->state(fn () => '💰 散客单次')
+                    ->color('info')
+                    ->weight('bold')
+                    ->extraAttributes(['class' => 'cursor-pointer hover:underline'])
+                    ->action(
+                        \Filament\Tables\Actions\Action::make('single_session')
+                            ->modalHeading('散客单次收银')
+                            ->modalWidth('md')
+                            ->form([
+                                \Filament\Forms\Components\Select::make('rehab_id')
+                                    ->label('服务项目')
+                                    ->options(\App\Models\RehabPackage::where('status', 1)->pluck('name', 'id'))
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('actual_price', \App\Models\RehabPackage::find($state)?->price)),
+                                \Filament\Forms\Components\TextInput::make('actual_price')
+                                    ->label('实收金额')
+                                    ->numeric()
+                                    ->required(),
+                                \Filament\Forms\Components\Select::make('sales_id')
+                                    ->label('销售')
+                                    ->options(\App\Models\User::pluck('name', 'id'))
+                                    ->required(),
+                                \Filament\Forms\Components\Select::make('sales_type')
+                                    ->label('提成类型')
+                                    ->options([
+                                        1 => '自主开发',
+                                        2 => '康复续卡',
+                                        3 => '协助开单',
+                                    ])
+                                    ->required(),
+                                \Filament\Forms\Components\Select::make('therapist_ids')
+                                    ->label('康复师')
+                                    ->options(\App\Models\User::pluck('name', 'id'))
+                                    ->multiple()
+                                    ->required(),
+                                \Filament\Forms\Components\DatePicker::make('t_date')
+                                    ->label('日期')
+                                    ->default(now())
+                                    ->required(),
+                                \Filament\Forms\Components\Textarea::make('content')
+                                    ->label('内容')
+                                    ->default('散客单次消费')
+                                    ->rows(2),
+                            ])
+                            ->action(function (array $data, \App\Models\PatientProfile $record) {
+                                \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record) {
+                                    $r = \App\Models\RehabPackage::findOrFail($data['rehab_id']);
+                                    $set = \App\Models\CommissionSetting::first();
+                                    $rates = [
+                                        1 => ($set->sales_type_1_rate ?? 3) / 100,
+                                        2 => ($set->sales_type_2_rate ?? 1) / 100,
+                                        3 => ($set->sales_type_3_rate ?? 2) / 100,
+                                    ];
+
+                                    $nP = \App\Models\PatientPackage::create([
+                                        'patient_profile_id' => $record->id,
+                                        'package_code' => $r->package_code,
+                                        'package_name' => $r->name . ' [单次散客]',
+                                        'package_type' => '单次',
+                                        'total_sessions' => 1,
+                                        'remaining_sessions' => 0,
+                                        'price' => $data['actual_price'],
+                                        'original_price' => $r->original_price,
+                                        'average_price' => $data['actual_price'],
+                                        'status' => 'completed',
+                                        'is_extendable' => 0,
+                                        'extension_days' => 0,
+                                        'is_shareable' => 0,
+                                        'purchase_date' => $data['t_date'],
+                                        'expiry_date' => $data['t_date'],
+                                        'salesperson_id' => $data['sales_id'],
+                                        'sales_type' => $data['sales_type'],
+                                        'sales_commission' => $data['actual_price'] * ($rates[$data['sales_type']] ?? 0.03),
+                                    ]);
+
+                                    $c = \App\Models\ConsumptionRecord::create([
+                                        'patient_profile_id' => $record->id,
+                                        'patient_package_id' => $nP->id,
+                                        'package_name' => $nP->package_name,
+                                        'deducted_sessions' => 1,
+                                        'remaining_sessions' => 0,
+                                        'treatment_date' => $data['t_date'],
+                                        'treatment_content' => $data['content'],
+                                    ]);
+                                    $c->users()->sync(array_fill_keys($data['therapist_ids'], ['commission_amount' => $set->service_commission ?? 15.00]));
+                                });
+                                \Filament\Notifications\Notification::make()->title('散客收银完成')->success()->send();
+                            })
+                    ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
