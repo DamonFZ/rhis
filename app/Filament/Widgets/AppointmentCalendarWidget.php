@@ -75,10 +75,9 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make()
+            \Saade\FilamentFullCalendar\Actions\CreateAction::make()
                 ->label('新增预约')
                 ->model(Appointment::class)
-                ->form($this->getFormSchema())
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
                         'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now()->toDateTimeString(),
@@ -92,11 +91,10 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function modalActions(): array
     {
         return [
-            \Filament\Actions\EditAction::make()
+            \Saade\FilamentFullCalendar\Actions\EditAction::make()
                 ->label('编辑')
-                ->model(Appointment::class)
-                ->form($this->getFormSchema()),
-            \Filament\Actions\DeleteAction::make()
+                ->model(Appointment::class),
+            \Saade\FilamentFullCalendar\Actions\DeleteAction::make()
                 ->label('删除')
                 ->model(Appointment::class),
         ];
