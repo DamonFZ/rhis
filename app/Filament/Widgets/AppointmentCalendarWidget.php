@@ -16,20 +16,24 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     public function config(): array
     {
         return [
-            // 默认显示带有时间轴的周视图
-            'initialView' => 'timeGridWeek',
-            // 头部工具栏配置：左侧翻页，中间标题，右侧视图切换按钮
+            // 核心优化：定义一个滚动的 7 天视图，它会自动以当天为起始日
+            'views' => [
+                'rollingWeek' => [
+                    'type' => 'timeGrid',
+                    'duration' => ['days' => 7],
+                    'buttonText' => '周',
+                ],
+            ],
+            // 默认加载自定义的滚动周视图
+            'initialView' => 'rollingWeek',
             'headerToolbar' => [
                 'left' => 'prev,next today',
                 'center' => 'title',
-                'right' => 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+                'right' => 'dayGridMonth,rollingWeek,timeGridDay,listWeek',
             ],
-            // 营业时间设置（隐藏半夜不必要的空白网格，可根据门店实际情况修改）
             'slotMinTime' => '08:00:00',
             'slotMaxTime' => '22:00:00',
-            // 隐藏"全天"槽位，因为门诊预约通常都是具体时段
             'allDaySlot' => false,
-            // 将按钮文本汉化
             'buttonText' => [
                 'today' => '今天',
                 'month' => '月',
@@ -37,13 +41,9 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 'day'   => '日',
                 'list'  => '议程',
             ],
-            // 核心：允许点击和拉选空白时间块
             'selectable' => true,
-            // 拖动时显示投影色块
             'selectMirror' => true,
-            // 核心：允许拖拽已有事件改变时间
             'editable' => true,
-            // 允许跨天选择
             'selectOverlap' => true,
         ];
     }
@@ -109,12 +109,19 @@ class AppointmentCalendarWidget extends FullCalendarWidget
             ->map(function (Appointment $appointment) {
                 $remarkText = $appointment->remark ? ' - ' . $appointment->remark : '';
 
+                $color = match ((int) $appointment->status) {
+                    0 => '#9ca3af', // 灰色 (已取消)
+                    1 => '#3b82f6', // 蓝色 (已预约)
+                    2 => '#22c55e', // 绿色 (已履约)
+                    default => '#3b82f6',
+                };
+
                 return [
                     'id'    => $appointment->id,
                     'title' => ($appointment->patientProfile?->name ?? '未知客户') . $remarkText,
                     'start' => $appointment->start_time->toDateTimeString(),
                     'end'   => $appointment->end_time->toDateTimeString(),
-                    'color' => $appointment->status === 1 ? '#3b82f6' : '#22c55e',
+                    'color' => $color,
                 ];
             })
             ->toArray();
