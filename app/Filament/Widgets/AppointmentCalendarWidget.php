@@ -3,19 +3,15 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Appointment;
-use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Saade\FilamentFullCalendar\Actions\CreateAction;
-use Saade\FilamentFullCalendar\Actions\DeleteAction;
-use Saade\FilamentFullCalendar\Actions\EditAction;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
 {
     protected static ?string $heading = '预约看板';
 
-    public string|null|\Illuminate\Database\Eloquent\Model $model = Appointment::class;
+    public ?string $model = Appointment::class;
 
     public function config(): array
     {
@@ -79,12 +75,15 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
-            CreateAction::make()
+            \Filament\Actions\CreateAction::make()
                 ->label('新增预约')
+                ->model(Appointment::class)
+                ->form($this->getFormSchema())
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
-                        'start_time' => isset($arguments['start']) ? Carbon::parse($arguments['start'])->toDateTimeString() : now(),
-                        'end_time'   => isset($arguments['end']) ? Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour(),
+                        'start_time' => $arguments['start'] ?? now()->toDateTimeString(),
+                        'end_time'   => $arguments['end'] ?? now()->addHour()->toDateTimeString(),
+                        'status'     => 1,
                     ]);
                 })
         ];
@@ -93,8 +92,13 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function modalActions(): array
     {
         return [
-            EditAction::make()->label('编辑'),
-            DeleteAction::make()->label('删除'),
+            \Filament\Actions\EditAction::make()
+                ->label('编辑')
+                ->model(Appointment::class)
+                ->form($this->getFormSchema()),
+            \Filament\Actions\DeleteAction::make()
+                ->label('删除')
+                ->model(Appointment::class),
         ];
     }
 
