@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\Appointment;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Saade\FilamentFullCalendar\Actions;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
@@ -76,7 +75,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            \Filament\Actions\CreateAction::make()
                 ->label('新增预约')
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
@@ -90,8 +89,8 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function modalActions(): array
     {
         return [
-            Actions\EditAction::make()->label('编辑'),
-            Actions\DeleteAction::make()->label('删除'),
+            \Filament\Actions\EditAction::make()->label('编辑'),
+            \Filament\Actions\DeleteAction::make()->label('删除'),
         ];
     }
 
