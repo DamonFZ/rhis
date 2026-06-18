@@ -39,7 +39,10 @@ class AdminPanelProvider extends PanelProvider
                 // 移除默认的 AccountWidget 和 FilamentInfoWidget
             ])
             ->plugins([
-                \Saade\FilamentFullCalendar\FilamentFullCalendarPlugin::make(),
+                \Saade\FilamentFullCalendar\FilamentFullCalendarPlugin::make()
+                    ->selectable()
+                    ->editable()
+                    ->timezone(config('app.timezone')),
             ])
             ->middleware([
                 EncryptCookies::class,
