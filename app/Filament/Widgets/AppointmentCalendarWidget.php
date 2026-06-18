@@ -40,8 +40,12 @@ class AppointmentCalendarWidget extends FullCalendarWidget
             ],
             // 核心：允许点击和拉选空白时间块
             'selectable' => true,
-            // 核心：允许后续拖拽修改预约时间
+            // 拖动时显示投影色块
+            'selectMirror' => true,
+            // 核心：允许拖拽已有事件改变时间
             'editable' => true,
+            // 允许跨天选择
+            'selectOverlap' => true,
         ];
     }
 
@@ -57,7 +61,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 ->label('康复师')
                 ->options(\App\Models\User::pluck('name', 'id'))
                 ->searchable()
-                ->required(),
+                ->nullable(),
             Forms\Components\DateTimePicker::make('start_time')->label('开始时间')->required(),
             Forms\Components\DateTimePicker::make('end_time')->label('结束时间')->required(),
             Forms\Components\Select::make('status')
@@ -69,13 +73,12 @@ class AppointmentCalendarWidget extends FullCalendarWidget
         ];
     }
 
-    // 控制点击空白处/右上角的「新建」动作
     protected function headerActions(): array
     {
         return [
             Actions\CreateAction::make()
+                ->label('新增预约')
                 ->mountUsing(function (Form $form, array $arguments) {
-                    // 捕获鼠标在日历上点击的时间段，并回填到表单中
                     $form->fill([
                         'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now(),
                         'end_time'   => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour(),
@@ -84,41 +87,29 @@ class AppointmentCalendarWidget extends FullCalendarWidget
         ];
     }
 
-    // 控制点击已有预约色块时的「编辑/删除」动作
     protected function modalActions(): array
     {
         return [
-            Actions\EditAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\EditAction::make()->label('编辑'),
+            Actions\DeleteAction::make()->label('删除'),
         ];
     }
 
     public function fetchEvents(array $fetchInfo): array
     {
-        return Appointment::with(['patientProfile', 'therapist'])
+        return Appointment::with('patientProfile')
             ->where('start_time', '>=', $fetchInfo['start'])
             ->where('end_time', '<=', $fetchInfo['end'])
             ->get()
             ->map(function (Appointment $appointment) {
-                $patientName = $appointment->patientProfile?->name ?? '未知客户';
-                $therapistName = $appointment->therapist?->name ?? '未指定';
-
-                $colors = [
-                    0 => '#9ca3af', // 已取消 - gray
-                    1 => '#3b82f6', // 已预约 - blue
-                    2 => '#22c55e', // 已履约 - green
-                ];
+                $remarkText = $appointment->remark ? ' - ' . $appointment->remark : '';
 
                 return [
                     'id'    => $appointment->id,
-                    'title' => "{$patientName} · {$therapistName}",
+                    'title' => ($appointment->patientProfile?->name ?? '未知客户') . $remarkText,
                     'start' => $appointment->start_time->toDateTimeString(),
                     'end'   => $appointment->end_time->toDateTimeString(),
-                    'color' => $colors[$appointment->status] ?? '#3b82f6',
-                    'extendedProps' => [
-                        'remark'  => $appointment->remark,
-                        'status'  => $appointment->status,
-                    ],
+                    'color' => $appointment->status === 1 ? '#3b82f6' : '#22c55e',
                 ];
             })
             ->toArray();
