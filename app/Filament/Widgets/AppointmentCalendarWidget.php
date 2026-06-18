@@ -5,13 +5,14 @@ namespace App\Filament\Widgets;
 use App\Models\Appointment;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
 {
     protected static ?string $heading = '预约看板';
 
-    public ?string $model = Appointment::class;
+    public Model | string | null $model = Appointment::class;
 
     public function config(): array
     {
