@@ -325,7 +325,7 @@
 | ------------------- | --------- | --- | ----- | --- | --------------------- |
 | id                  | bigint    | 20  | 否    | 自增  | 主键                    |
 | patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                |
-| therapist_id        | bigint    | 20  | 否    | -   | 关联康复师ID（users表）        |
+| therapist_id        | bigint    | 20  | 是    | -   | 关联康复师ID（users表），可空   |
 | start_time          | datetime  | -   | 否    | -   | 预约开始时间               |
 | end_time            | datetime  | -   | 否    | -   | 预约结束时间               |
 | remark              | text      | -   | 是    | -   | 预约备注                  |
@@ -378,4 +378,4 @@ patient_profiles ────< physical_assessments
 
 ---
 
-*最后更新：2026-06-08*
+*最后更新：2026-06-18*
