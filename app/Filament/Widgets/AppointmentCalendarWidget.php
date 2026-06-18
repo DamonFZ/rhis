@@ -3,8 +3,12 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Appointment;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Saade\FilamentFullCalendar\Actions\CreateAction;
+use Saade\FilamentFullCalendar\Actions\DeleteAction;
+use Saade\FilamentFullCalendar\Actions\EditAction;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
@@ -75,12 +79,12 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('新增预约')
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
-                        'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now(),
-                        'end_time'   => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour(),
+                        'start_time' => isset($arguments['start']) ? Carbon::parse($arguments['start'])->toDateTimeString() : now(),
+                        'end_time'   => isset($arguments['end']) ? Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour(),
                     ]);
                 })
         ];
@@ -89,8 +93,8 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     protected function modalActions(): array
     {
         return [
-            \Filament\Actions\EditAction::make()->label('编辑'),
-            \Filament\Actions\DeleteAction::make()->label('删除'),
+            EditAction::make()->label('编辑'),
+            DeleteAction::make()->label('删除'),
         ];
     }
 
