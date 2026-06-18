@@ -23,11 +23,4 @@ class AppointmentCalendarPage extends Page
             AppointmentCalendarWidget::class,
         ];
     }
-
-    public function getFooterWidgets(): array
-    {
-        return [
-            AppointmentCalendarWidget::class,
-        ];
-    }
 }
