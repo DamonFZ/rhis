@@ -34,9 +34,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // 移除默认的 AccountWidget 和 FilamentInfoWidget
+                \App\Filament\Widgets\DashboardStatsOverview::class,
             ])
             ->plugins([
                 \Saade\FilamentFullCalendar\FilamentFullCalendarPlugin::make()

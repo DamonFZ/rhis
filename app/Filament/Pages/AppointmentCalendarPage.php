@@ -13,8 +13,6 @@ class AppointmentCalendarPage extends Page
 
     protected static ?string $title = '预约看板';
 
-    protected static ?string $navigationGroup = '预约管理';
-
     protected static string $view = 'filament.pages.appointment-calendar-page';
 
     protected static ?int $navigationSort = 10;
