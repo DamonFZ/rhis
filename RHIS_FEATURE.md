@@ -359,22 +359,24 @@
 
 ### 6.1 预约看板
 
-**功能描述：** 使用 Mobiscroll 开发月度预约看板，清晰展示一个月的预约情况，包含预约时间、客人信息、康复师、备注等关键信息。
+**功能描述：** 使用开源的 saade/filament-fullcalendar（基于 FullCalendar）开发预约看板，清晰展示一个月的预约情况，包含预约时间、客人信息、康复师、备注等关键信息。
 
 | 功能点 | 状态 | 说明 |
 | ------ | ---- | ---- |
 | Appointment 模型 | ✅ 已完成 | 包含客户、康复师、起止时间、备注、状态等字段 |
 | appointments 迁移 | ✅ 已完成 | 已创建索引及外键约束 |
-| Filament 自定义页面 | ✅ 已完成 | `AppointmentCalendar` 页面，独立入口，月视图展示 |
-| Mobiscroll 日历组件 | ✅ 已完成 | 通过 CDN 引入，支持月视图和议程视图 |
-| 事件数据格式化 | ✅ 已完成 | 输出 id, start, end, title, description, color |
-| 事件点击钩子 | ✅ 已完成 | 预留 `onEventClick` 回调，便于后续扩展 |
+| FullCalendar 扩展包 | ✅ 已完成 | 安装 `saade/filament-fullcalendar` v3.2.4 |
+| FullCalendar Widget | ✅ 已完成 | `AppointmentCalendarWidget` 继承 FullCalendarWidget，实现 `fetchEvents` 动态加载 |
+| 独立导航页面 | ✅ 已完成 | `AppointmentCalendarPage` 挂载 Widget，侧边菜单入口 |
+| 事件数据格式化 | ✅ 已完成 | 输出 id, title（客户名·康复师）, start, end, color, extendedProps（备注/状态） |
+| 状态颜色区分 | ✅ 已完成 | 已预约=蓝色，已履约=绿色，已取消=灰色 |
 
 **涉及文件：**
 - `app/Models/Appointment.php`
 - `database/migrations/2026_06_08_160009_create_appointments_table.php`
-- `app/Filament/Pages/AppointmentCalendar.php`
-- `resources/views/filament/pages/appointment-calendar.blade.php`
+- `app/Filament/Widgets/AppointmentCalendarWidget.php`
+- `app/Filament/Pages/AppointmentCalendarPage.php`
+- `resources/views/filament/pages/appointment-calendar-page.blade.php`
 
 ---
 
