@@ -3,11 +3,16 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Appointment;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Saade\FilamentFullCalendar\Actions;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
 {
     protected static ?string $heading = '预约看板';
+
+    public string|null|\Illuminate\Database\Eloquent\Model $model = Appointment::class;
 
     public function config(): array
     {
@@ -33,6 +38,58 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 'day'   => '日',
                 'list'  => '议程',
             ],
+            // 核心：允许点击和拉选空白时间块
+            'selectable' => true,
+            // 核心：允许后续拖拽修改预约时间
+            'editable' => true,
+        ];
+    }
+
+    public function getFormSchema(): array
+    {
+        return [
+            Forms\Components\Select::make('patient_profile_id')
+                ->label('预约客户')
+                ->options(\App\Models\PatientProfile::pluck('name', 'id'))
+                ->searchable()
+                ->required(),
+            Forms\Components\Select::make('therapist_id')
+                ->label('康复师')
+                ->options(\App\Models\User::pluck('name', 'id'))
+                ->searchable()
+                ->required(),
+            Forms\Components\DateTimePicker::make('start_time')->label('开始时间')->required(),
+            Forms\Components\DateTimePicker::make('end_time')->label('结束时间')->required(),
+            Forms\Components\Select::make('status')
+                ->label('状态')
+                ->options([0 => '已取消', 1 => '已预约', 2 => '已履约'])
+                ->default(1)
+                ->required(),
+            Forms\Components\Textarea::make('remark')->label('备注')->rows(2),
+        ];
+    }
+
+    // 控制点击空白处/右上角的「新建」动作
+    protected function headerActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->mountUsing(function (Form $form, array $arguments) {
+                    // 捕获鼠标在日历上点击的时间段，并回填到表单中
+                    $form->fill([
+                        'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now(),
+                        'end_time'   => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour(),
+                    ]);
+                })
+        ];
+    }
+
+    // 控制点击已有预约色块时的「编辑/删除」动作
+    protected function modalActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+            Actions\DeleteAction::make(),
         ];
     }
 
