@@ -5,14 +5,13 @@ namespace App\Filament\Widgets;
 use App\Models\Appointment;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AppointmentCalendarWidget extends FullCalendarWidget
 {
     protected static ?string $heading = '预约看板';
 
-    public Model | string | null $model = Appointment::class;
+    public string|null|\Illuminate\Database\Eloquent\Model $model = Appointment::class;
 
     public function config(): array
     {
@@ -82,8 +81,8 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 ->form($this->getFormSchema())
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
-                        'start_time' => $arguments['start'] ?? now()->toDateTimeString(),
-                        'end_time'   => $arguments['end'] ?? now()->addHour()->toDateTimeString(),
+                        'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now()->toDateTimeString(),
+                        'end_time'   => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour()->toDateTimeString(),
                         'status'     => 1,
                     ]);
                 })
