@@ -9,7 +9,7 @@ class ManageConsumptionRecords extends ManageRecords
 {
     protected static string $resource = ConsumptionRecordResource::class;
 
-    protected ?string $title = '康复记录';
+    protected static ?string $title = '康复记录';
 
     protected function getHeaderActions(): array
     {
