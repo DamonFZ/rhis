@@ -52,7 +52,7 @@ class ConsumptionRecordResource extends Resource
                     ->date('Y-m-d')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('patientProfile.name')
+                Tables\Columns\TextColumn::make('patient.name')
                     ->label('客户名称')
                     ->weight('bold')
                     ->searchable(),
