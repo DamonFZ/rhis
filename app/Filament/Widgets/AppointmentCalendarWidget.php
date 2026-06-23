@@ -11,11 +11,14 @@ class AppointmentCalendarWidget extends FullCalendarWidget
 {
     protected static ?string $heading = '预约看板';
 
+    protected static ?string $pollingInterval = '300s';
+
     public string|null|\Illuminate\Database\Eloquent\Model $model = Appointment::class;
 
     public function config(): array
     {
         return [
+            'expandRows' => true,
             // 核心优化：定义一个滚动的 7 天视图，它会自动以当天为起始日
             'views' => [
                 'rollingWeek' => [
@@ -37,9 +40,9 @@ class AppointmentCalendarWidget extends FullCalendarWidget
             'buttonText' => [
                 'today' => '今天',
                 'month' => '月',
-                'week'  => '周',
-                'day'   => '日',
-                'list'  => '议程',
+                'week' => '周',
+                'day' => '日',
+                'list' => '议程',
             ],
             'selectable' => true,
             'selectMirror' => true,
@@ -81,10 +84,10 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 ->mountUsing(function (Form $form, array $arguments) {
                     $form->fill([
                         'start_time' => isset($arguments['start']) ? \Carbon\Carbon::parse($arguments['start'])->toDateTimeString() : now()->toDateTimeString(),
-                        'end_time'   => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour()->toDateTimeString(),
-                        'status'     => 1,
+                        'end_time' => isset($arguments['end']) ? \Carbon\Carbon::parse($arguments['end'])->toDateTimeString() : now()->addHour()->toDateTimeString(),
+                        'status' => 1,
                     ]);
-                })
+                }),
         ];
     }
 
@@ -107,7 +110,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
             ->where('end_time', '<=', $fetchInfo['end'])
             ->get()
             ->map(function (Appointment $appointment) {
-                $remarkText = $appointment->remark ? ' - ' . $appointment->remark : '';
+                $remarkText = $appointment->remark ? ' - '.$appointment->remark : '';
 
                 $color = match ((int) $appointment->status) {
                     0 => '#9ca3af', // 灰色 (已取消)
@@ -117,10 +120,10 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 };
 
                 return [
-                    'id'    => $appointment->id,
-                    'title' => ($appointment->patientProfile?->name ?? '未知客户') . $remarkText,
+                    'id' => $appointment->id,
+                    'title' => ($appointment->patientProfile?->name ?? '未知客户').$remarkText,
                     'start' => $appointment->start_time->toDateTimeString(),
-                    'end'   => $appointment->end_time->toDateTimeString(),
+                    'end' => $appointment->end_time->toDateTimeString(),
                     'color' => $color,
                 ];
             })

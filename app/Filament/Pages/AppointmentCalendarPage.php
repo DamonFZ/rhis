@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Widgets\AppointmentCalendarWidget;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
 
 class AppointmentCalendarPage extends Page
 {
@@ -29,6 +30,11 @@ class AppointmentCalendarPage extends Page
                     'x-on:click' => 'document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()',
                 ]),
         ];
+    }
+
+    public function getMaxContentWidth(): MaxWidth|string|null
+    {
+        return 'full';
     }
 
     public function getHeaderWidgets(): array

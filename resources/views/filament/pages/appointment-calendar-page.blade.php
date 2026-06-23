@@ -17,8 +17,8 @@
             max-width: 100% !important;
         }
 
-        .fc-timegrid-slot {
-            height: 3.5em !important;
+        :fullscreen .fc {
+            height: 100vh !important;
         }
 
         .fc-timegrid-event .fc-event-main {
