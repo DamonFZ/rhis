@@ -370,6 +370,11 @@
 | 独立导航页面 | ✅ 已完成 | `AppointmentCalendarPage` 挂载 Widget，侧边菜单入口 |
 | 事件数据格式化 | ✅ 已完成 | 输出 id, title（客户名·康复师）, start, end, color, extendedProps（备注/状态） |
 | 状态颜色区分 | ✅ 已完成 | 已预约=蓝色，已履约=绿色，已取消=灰色 |
+| 大屏全屏模式 | ✅ 已完成 | 顶部"大屏模式"按钮，点击隐藏侧边栏和顶栏，日历撑满屏幕 |
+| 大屏宽度自适应 | ✅ 已完成 | 页面强制使用 100% 全宽，取消最大宽度限制 |
+| 全屏自动刷新 | ✅ 已完成 | 5 分钟自动刷新（`$pollingInterval = '300s'`） |
+| 行高自适应 | ✅ 已完成 | FullCalendar `expandRows => true` 自动拉伸行高填满容器 |
+| 文本换行 | ✅ 已完成 | `.fc-timegrid-event .fc-event-main { white-space: normal }` 强制换行 |
 
 **涉及文件：**
 - `app/Models/Appointment.php`
@@ -377,6 +382,28 @@
 - `app/Filament/Widgets/AppointmentCalendarWidget.php`
 - `app/Filament/Pages/AppointmentCalendarPage.php`
 - `resources/views/filament/pages/appointment-calendar-page.blade.php`
+
+---
+
+## 模块八：全量康复记录看板
+
+### 8.1 全量康复记录只读看板
+
+**功能描述：** 集中展示所有客户的划扣与康复日志，仅提供浏览和跳转能力，严禁在此页面进行增删改操作。
+
+| 功能点 | 状态 | 说明 |
+| ------ | ---- | ---- |
+| ConsumptionRecord Resource | ✅ 已完成 | 使用 `--simple` 参数生成，仅保留 List 页面 |
+| 权限控制 | ✅ 已完成 | 重写 `canCreate()`、`canEdit()`、`canDelete()` 返回 false |
+| 默认排序 | ✅ 已完成 | 按康复日期倒序排列 |
+| 数据列展示 | ✅ 已完成 | 康复日期、客户名称（加粗）、关联套餐、康复师（badge）、消耗次数（badge）、康复内容/备注（截断+tooltip） |
+| 查看档案跳转 | ✅ 已完成 | 自定义 Action 点击跳转到该客户的档案编辑页 |
+| 中文标题 | ✅ 已完成 | 页面标题和导航标签均为中文"康复记录" |
+| 导航分组 | ✅ 已完成 | 归入"数据报表"导航组 |
+
+**涉及文件：**
+- `app/Filament/Resources/ConsumptionRecordResource.php`
+- `app/Filament/Resources/ConsumptionRecordResource/Pages/ManageConsumptionRecords.php`
 
 ---
 
