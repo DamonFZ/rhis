@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\AppointmentCalendarWidget;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 
 class AppointmentCalendarPage extends Page
@@ -16,6 +17,19 @@ class AppointmentCalendarPage extends Page
     protected static string $view = 'filament.pages.appointment-calendar-page';
 
     protected static ?int $navigationSort = 10;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('toggle_fullscreen')
+                ->label('大屏模式')
+                ->icon('heroicon-o-arrows-pointing-out')
+                ->color('gray')
+                ->extraAttributes([
+                    'x-on:click' => 'document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()',
+                ]),
+        ];
+    }
 
     public function getHeaderWidgets(): array
     {
