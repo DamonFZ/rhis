@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Mobile\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,12 +19,11 @@ Route::get('/', function () {
 
 Route::prefix('mobile')->middleware(['web', 'set.mobile.locale'])->group(function () {
     Route::get('bind', [\App\Http\Controllers\Mobile\AuthController::class, 'bindConfirm'])->name('mobile.bind');
-    Route::post('bind', [\App\Http\Controllers\Mobile\AuthController::class, 'bindStore'])->name('mobile.bind.store');
 });
 
 // 动态分配中间件
 $mobileMiddlewares = ['web', 'set.mobile.locale'];
-if (!app()->isLocal()) {
+if (! app()->isLocal()) {
     $mobileMiddlewares[] = 'wechat.oauth:default,snsapi_base';
 }
 

@@ -15,14 +15,13 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Str;
-use Filament\Notifications\Notification;
 
 class PatientProfileResource extends Resource
 {
@@ -117,7 +116,9 @@ class PatientProfileResource extends Resource
                                     ->required()
                                     ->rule(fn ($get) => function ($attr, $val, $fail) use ($get) {
                                         $p = PatientPackage::find($get('patient_package_id'));
-                                        if ($p && $val > $p->remaining_sessions) $fail("最多只能扣 {$p->remaining_sessions} 次");
+                                        if ($p && $val > $p->remaining_sessions) {
+                                            $fail("最多只能扣 {$p->remaining_sessions} 次");
+                                        }
                                     }),
                                 Forms\Components\Select::make('therapist_ids')
                                     ->label('服务康复师')
@@ -156,72 +157,73 @@ class PatientProfileResource extends Resource
                                 Notification::make()->title('划扣成功')->success()->send();
                             })
                     ),
-                \Filament\Tables\Columns\TextColumn::make('buy_package_trigger' )
-                    ->label('购买套餐' )
-                    ->state(fn ( ) => '🛒 购买套餐')
-                    ->color('success' )
-                    ->weight('bold' )
-                    ->extraAttributes(['class' => 'cursor-pointer hover:underline'] )
+                \Filament\Tables\Columns\TextColumn::make('buy_package_trigger')
+                    ->label('购买套餐')
+                    ->state(fn () => '🛒 购买套餐')
+                    ->color('success')
+                    ->weight('bold')
+                    ->extraAttributes(['class' => 'cursor-pointer hover:underline'])
                     ->action(
-                        \Filament\Tables\Actions\Action::make('buy_package_modal' )
-                            ->modalHeading('为客户办理新套餐' )
-                            ->modalWidth('md' )
-                            ->form( [
-                                \Filament\Forms\Components\Select::make('rehab_package_id' )
-                                    ->label('选择康复套餐' )
-                                    ->options(\App\Models\RehabPackage::where('status', 1)->pluck('name', 'id') )
-                                    ->required( )
-                                    ->searchable( ),
-                                \Filament\Forms\Components\Select::make('salesperson_id' )
-                                    ->label('开单员工（销售）' )
-                                    ->options(\App\Models\User::pluck('name', 'id') )
-                                    ->required( )
-                                    ->searchable( ),
-                                \Filament\Forms\Components\Select::make('sales_type' )
-                                    ->label('提成类型' )
-                                    ->options(function ( ) {
-                                        $setting = \App\Models\CommissionSetting::first( );
-                                        return  [
-                                            1 => '自主开发 (' . ($setting->sales_type_1_rate ?? 3) . '%)' ,
-                                            2 => '康复续卡 (' . ($setting->sales_type_2_rate ?? 1) . '%)' ,
-                                            3 => '协助开单 (' . ($setting->sales_type_3_rate ?? 2) . '%)' ,
+                        \Filament\Tables\Actions\Action::make('buy_package_modal')
+                            ->modalHeading('为客户办理新套餐')
+                            ->modalWidth('md')
+                            ->form([
+                                \Filament\Forms\Components\Select::make('rehab_package_id')
+                                    ->label('选择康复套餐')
+                                    ->options(\App\Models\RehabPackage::where('status', 1)->pluck('name', 'id'))
+                                    ->required()
+                                    ->searchable(),
+                                \Filament\Forms\Components\Select::make('salesperson_id')
+                                    ->label('开单员工（销售）')
+                                    ->options(\App\Models\User::pluck('name', 'id'))
+                                    ->required()
+                                    ->searchable(),
+                                \Filament\Forms\Components\Select::make('sales_type')
+                                    ->label('提成类型')
+                                    ->options(function () {
+                                        $setting = \App\Models\CommissionSetting::first();
+
+                                        return [
+                                            1 => '自主开发 ('.($setting->sales_type_1_rate ?? 3).'%)',
+                                            2 => '康复续卡 ('.($setting->sales_type_2_rate ?? 1).'%)',
+                                            3 => '协助开单 ('.($setting->sales_type_3_rate ?? 2).'%)',
                                         ];
-                                    } )
-                                    ->required( ),
-                            ] )
-                            ->action(function (array $data, \App\Models\PatientProfile $record ) {
-                                \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record ) {
-                                    $rehabPkg = \App\Models\RehabPackage::findOrFail($data['rehab_package_id'] );
-                                    $setting = \App\Models\CommissionSetting::first( );
-                                    $rates  = [
-                                        1 => ($setting->sales_type_1_rate ?? 3) / 100 ,
-                                        2 => ($setting->sales_type_2_rate ?? 1) / 100 ,
-                                        3 => ($setting->sales_type_3_rate ?? 2) / 100 ,
+                                    })
+                                    ->required(),
+                            ])
+                            ->action(function (array $data, \App\Models\PatientProfile $record) {
+                                \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record) {
+                                    $rehabPkg = \App\Models\RehabPackage::findOrFail($data['rehab_package_id']);
+                                    $setting = \App\Models\CommissionSetting::first();
+                                    $rates = [
+                                        1 => ($setting->sales_type_1_rate ?? 3) / 100,
+                                        2 => ($setting->sales_type_2_rate ?? 1) / 100,
+                                        3 => ($setting->sales_type_3_rate ?? 2) / 100,
                                     ];
 
-                                    \App\Models\PatientPackage::create( [
-                                        'patient_profile_id' => $record ->id,
-                                        'package_code'       => $rehabPkg ->package_code,
-                                        'package_name'       => $rehabPkg ->name,
-                                        'package_type'       => $rehabPkg ->package_type,
-                                        'total_sessions'     => $rehabPkg ->total_sessions,
-                                        'remaining_sessions' => $rehabPkg ->total_sessions,
-                                        'price'              => $rehabPkg ->price,
-                                        'original_price'     => $rehabPkg ->original_price,
-                                        'average_price'      => $rehabPkg ->average_price,
-                                        'status'             => 'active' ,
-                                        'is_extendable'      => $rehabPkg ->is_extendable,
-                                        'extension_days'     => $rehabPkg ->extension_days,
-                                        'is_shareable'       => $rehabPkg ->is_shareable,
-                                        'purchase_date'      => now( ),
-                                        'expiry_date'        => now()->addDays($rehabPkg->validity_days + $rehabPkg->extension_days ),
-                                        'salesperson_id'     => $data['salesperson_id' ],
-                                        'sales_type'         => $data['sales_type' ],
-                                        'sales_commission'   => $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03 ),
-                                    ] );
-                                } );
-                                \Filament\Notifications\Notification::make()->title('套餐购买成功')->success()->send( );
-                            } )
+                                    \App\Models\PatientPackage::create([
+                                        'patient_profile_id' => $record->id,
+                                        'package_code' => $rehabPkg->package_code,
+                                        'package_name' => $rehabPkg->name,
+                                        'package_type' => $rehabPkg->package_type,
+                                        'total_sessions' => $rehabPkg->total_sessions,
+                                        'remaining_sessions' => $rehabPkg->total_sessions,
+                                        'price' => $rehabPkg->price,
+                                        'original_price' => $rehabPkg->original_price,
+                                        'average_price' => $rehabPkg->average_price,
+                                        'status' => 'active',
+                                        'is_extendable' => $rehabPkg->is_extendable,
+                                        'extension_days' => $rehabPkg->extension_days,
+                                        'is_shareable' => $rehabPkg->is_shareable,
+                                        'purchase_date' => now(),
+                                        'expiry_date' => now()->addDays($rehabPkg->validity_days + $rehabPkg->extension_days),
+                                        'salesperson_id' => $data['salesperson_id'],
+                                        'sales_type' => $data['sales_type'],
+                                        'sales_commission' => $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03),
+                                    ]);
+                                });
+                                \Filament\Notifications\Notification::make()->title('套餐购买成功')->success()->send();
+                            })
                     ),
                 \Filament\Tables\Columns\TextColumn::make('single_session_trigger')
                     ->label('散客收银')
@@ -283,7 +285,7 @@ class PatientProfileResource extends Resource
                                     $nP = \App\Models\PatientPackage::create([
                                         'patient_profile_id' => $record->id,
                                         'package_code' => $r->package_code,
-                                        'package_name' => $r->name . ' [单次散客]',
+                                        'package_name' => $r->name.' [单次散客]',
                                         'package_type' => '单次',
                                         'total_sessions' => 1,
                                         'remaining_sessions' => 0,
@@ -334,12 +336,10 @@ class PatientProfileResource extends Resource
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalContent(function ($record) {
-                        if (blank($record->bind_token)) {
-                            $record->update(['bind_token' => Str::random(32)]);
-                        }
+                        $sign = hash_hmac('sha256', $record->id, config('app.key'));
                         $url = route('mobile.bind', [
                             'patient_id' => $record->id,
-                            'token' => $record->bind_token,
+                            'sign' => $sign,
                         ]);
 
                         $qrCode = QrCode::size(250)->margin(1)->generate($url);
@@ -348,17 +348,7 @@ class PatientProfileResource extends Resource
                             'qrCode' => $qrCode,
                             'patientName' => $record->name,
                         ]);
-                    })
-                    ->extraModalActions([
-                        Action::make('resetToken')
-                            ->label('重新生成二维码')
-                            ->color('danger')
-                            ->requiresConfirmation()
-                            ->action(function ($record) {
-                                $record->update(['bind_token' => Str::random(32)]);
-                                Notification::make()->success()->title('已重新生成并作废旧码')->send();
-                            }),
-                    ]),
+                    }),
                 Action::make('unbindWechat')
                     ->label('解绑')
                     ->icon('heroicon-o-x-circle')
@@ -368,10 +358,7 @@ class PatientProfileResource extends Resource
                     ->modalHeading('确认解绑微信')
                     ->modalDescription('确定要解绑该客户的微信吗？解绑后需要重新生成二维码让客户扫码绑定。')
                     ->action(function ($record) {
-                        $record->update([
-                            'wechat_openid' => null,
-                            'bind_token' => null
-                        ]);
+                        $record->update(['wechat_openid' => null]);
                         Notification::make()->success()->title('已成功解绑微信')->send();
                     }),
                 Tables\Actions\ViewAction::make(),

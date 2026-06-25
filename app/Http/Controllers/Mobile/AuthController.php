@@ -10,14 +10,17 @@ class AuthController extends Controller
 {
     public function bindConfirm(Request $request)
     {
-        // 1. 校验数据库中的 bind_token 是否匹配
-        $patient = PatientProfile::where('id', $request->patient_id)
-            ->where('bind_token', $request->token)
-            ->firstOrFail();
+        $patient = PatientProfile::findOrFail($request->patient_id);
 
-        // 2. 微信授权逻辑
+        // 签名校验
+        $expectedSign = hash_hmac('sha256', $patient->id, config('app.key'));
+        if ($request->sign !== $expectedSign) {
+            abort(403, '访问被拒绝：签名校验失败。');
+        }
+
+        // 获取扫码用户的微信 OpenID
         if (app()->isLocal()) {
-            session(['easywechat.oauth_user.default' => 'mock_openid_local_dev_123']);
+            $openid = session('easywechat.oauth_user.default', 'mock_openid_local_dev_123');
         } else {
             $app = app(\EasyWeChat\OfficialAccount\Application::class);
             $oauth = $app->getOAuth();
@@ -27,70 +30,40 @@ class AuthController extends Controller
                 $user = $oauth->userFromCode($request->code);
                 session(['easywechat.oauth_user.default' => $user]);
 
-                return redirect()->to($request->url() . '?' . http_build_query($request->except(['code', 'state'])));
+                return redirect()->to($request->url().'?'.http_build_query($request->except(['code', 'state'])));
             }
 
-            // 如果没有 session，发起微信授权请求 (修复 v7 返回字符串的问题)
-            if (!session()->has('easywechat.oauth_user.default')) {
+            // 如果没有 session，发起微信授权请求
+            if (! session()->has('easywechat.oauth_user.default')) {
                 $authUrl = $oauth->scopes(['snsapi_base'])->redirect($request->fullUrl());
+
                 return redirect()->away($authUrl);
             }
+
+            $wechatUser = session('easywechat.oauth_user.default');
+            $openid = is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null);
         }
 
-        // 3. 自动执行绑定逻辑
-        $wechatUser = session('easywechat.oauth_user.default');
-        $openid = app()->isLocal() ? $wechatUser : (is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null));
-
-        if ($openid) {
-            // 检查该微信是否已绑定其他客户档案
-            $existingPatient = PatientProfile::where('wechat_openid', $openid)->where('id', '!=', $patient->id)->first();
-            if ($existingPatient) {
-                return view('mobile.bind-error', [
-                    'message' => '该微信已绑定客户 "' . ($existingPatient->name ?: $existingPatient->id) . '"，一个微信只能绑定一个客户档案。',
-                    'existingPatient' => $existingPatient
-                ]);
-            }
-
-            // 写入 OpenID，并清空 token 使二维码立刻失效防复用
-            $patient->update([
-                'wechat_openid' => $openid,
-                'bind_token' => null
-            ]);
-        }
-
-        // 4. 绑定成功，直接重定向到大本营！(绝对不要 forget session，否则大本营会报 403)
-        return redirect()->route('mobile.dashboard');
-    }
-
-    public function bindStore(Request $request)
-    {
-        $request->validate(['patient_id' => 'required|exists:patient_profiles,id']);
-        $wechatUser = session('easywechat.oauth_user.default');
-        $openid = app()->isLocal() ? $wechatUser : ($wechatUser['id'] ?? ($wechatUser ? $wechatUser->getId() : null));
-
-        if (!$openid) {
+        if (! $openid) {
             return back()->with('error', '未获取到微信授权信息。');
         }
 
-        $patient = PatientProfile::findOrFail($request->patient_id);
+        // 状态机分流逻辑
+        $currentOpenId = $openid;
 
-        // 检查该微信是否已绑定其他客户档案
-        $existingPatient = PatientProfile::where('wechat_openid', $openid)->where('id', '!=', $patient->id)->first();
-        if ($existingPatient) {
-            return view('mobile.bind-error', [
-                'message' => '该微信已绑定客户 "' . ($existingPatient->name ?: $existingPatient->id) . '"，一个微信只能绑定一个客户档案。',
-                'existingPatient' => $existingPatient
-            ]);
+        // 状态 A：档案尚未绑定微信
+        if (empty($patient->wechat_openid)) {
+            $patient->update(['wechat_openid' => $currentOpenId]);
+
+            return redirect()->route('mobile.dashboard')->with('success', '绑定成功');
         }
 
-        $patient->update([
-            'wechat_openid' => $openid,
-            'bind_token' => null // 绑定成功后立即使二维码失效
-        ]);
+        // 状态 B：档案已绑定，且扫码者就是本人
+        if ($patient->wechat_openid === $currentOpenId) {
+            return redirect()->route('mobile.dashboard');
+        }
 
-        session()->forget('easywechat.oauth_user.default');
-
-        // 绑定成功后，直接重定向到 Dashboard 首页
-        return redirect()->route('mobile.dashboard');
+        // 状态 C：档案已被其他人绑定
+        abort(403, '访问被拒绝：该档案已绑定其他微信号。请联系康复师解绑。');
     }
 }
