@@ -47,8 +47,8 @@ class ImagingController extends Controller
 
         $pairs = [];
         foreach ($angles as $key => $label) {
-            $urlA = ($recordA->photo_urls[$key] ?? null) ? asset($recordA->photo_urls[$key]) : null;
-            $urlB = ($recordB->photo_urls[$key] ?? null) ? asset($recordB->photo_urls[$key]) : null;
+            $urlA = ($recordA->photo_urls[$key] ?? null) ? asset('storage/' . $recordA->photo_urls[$key]) : null;
+            $urlB = ($recordB->photo_urls[$key] ?? null) ? asset('storage/' . $recordB->photo_urls[$key]) : null;
 
             if ($urlA && $urlB) {
                 $pairs[$key] = [
