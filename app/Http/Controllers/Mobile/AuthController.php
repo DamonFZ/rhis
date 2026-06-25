@@ -53,6 +53,15 @@ class AuthController extends Controller
 
         // 状态 A：档案尚未绑定微信
         if (empty($patient->wechat_openid)) {
+            // 防重复绑定：检查该微信是否已绑定其他档案
+            $isBoundToAnother = PatientProfile::where('wechat_openid', $currentOpenId)
+                ->where('id', '!=', $patient->id)
+                ->exists();
+
+            if ($isBoundToAnother) {
+                return back()->with('error', '您的微信号已绑定过其他专属档案。如需更换，请先联系康复师解绑。');
+            }
+
             $patient->update(['wechat_openid' => $currentOpenId]);
 
             return redirect()->route('mobile.dashboard')->with('success', '绑定成功');

@@ -328,11 +328,10 @@ class PatientProfileResource extends Resource
             ])
             ->actions([
                 Action::make('bindWechat')
-                    ->label('微信绑定')
+                    ->label('档案码')
                     ->icon('heroicon-o-qr-code')
                     ->color('success')
-                    ->hidden(fn ($record) => filled($record->wechat_openid))
-                    ->modalHeading('绑定微信档案')
+                    ->modalHeading('客户档案二维码')
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalContent(function ($record) {
