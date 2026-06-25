@@ -34,4 +34,6 @@ Route::prefix('mobile')->middleware($mobileMiddlewares)->group(function () {
     Route::get('usage-history', [\App\Http\Controllers\Mobile\UsageHistoryController::class, 'index'])->name('mobile.usage_history');
     Route::get('reports', [\App\Http\Controllers\Mobile\ReportController::class, 'index'])->name('mobile.reports');
     Route::get('reports/{id}', [\App\Http\Controllers\Mobile\ReportController::class, 'show'])->name('mobile.reports.show');
+    Route::get('records', [\App\Http\Controllers\Mobile\ImagingController::class, 'index'])->name('mobile.records.index');
+    Route::get('records/compare', [\App\Http\Controllers\Mobile\ImagingController::class, 'compare'])->name('mobile.records.compare');
 });
