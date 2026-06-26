@@ -225,4 +225,6 @@ routes/
 
 ## 许可证
 
-MIT License
+本项目采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans) 协议。
+
+> 允许个人学习、研究、非商业性使用，禁止用于任何商业目的。如需商用，请联系作者获取书面授权。
