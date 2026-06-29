@@ -38,13 +38,14 @@ class EmployeeCommissionReport extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Builder $query): Builder {
+            ->query(User::query())
+            ->modifyQueryUsing(function (Builder $query) {
                 $monthParts = explode('-', $this->selectedMonth);
                 $year = $monthParts[0];
                 $month = $monthParts[1];
                 $firstDayOfMonth = "{$year}-{$month}-01";
 
-                return $query->where(function (Builder $q) use ($firstDayOfMonth) {
+                $query->where(function (Builder $q) use ($firstDayOfMonth) {
                     // 未离职的员工
                     $q->whereNull('resigned_at')
                         // 或离职日期 >= 报表月份第一天（当月离职仍计入）
