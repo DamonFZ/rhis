@@ -2,9 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\User;
-use App\Models\ConsumptionRecord;
 use App\Models\PatientPackage;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\Action;
@@ -20,7 +19,7 @@ class EmployeeCommissionReport extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    
+
     protected static string $view = 'filament.pages.employee-commission-report';
 
     protected static ?string $navigationLabel = '员工提成报表';
@@ -39,7 +38,19 @@ class EmployeeCommissionReport extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(User::query())
+            ->query(function (Builder $query): Builder {
+                $monthParts = explode('-', $this->selectedMonth);
+                $year = $monthParts[0];
+                $month = $monthParts[1];
+                $firstDayOfMonth = "{$year}-{$month}-01";
+
+                return $query->where(function (Builder $q) use ($firstDayOfMonth) {
+                    // 未离职的员工
+                    $q->whereNull('resigned_at')
+                        // 或离职日期 >= 报表月份第一天（当月离职仍计入）
+                        ->orWhere('resigned_at', '>=', $firstDayOfMonth);
+                });
+            })
             ->columns([
                 TextColumn::make('name')
                     ->label('员工姓名')
@@ -53,18 +64,18 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         $records = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
                             ->get();
-                        
+
                         $total = 0;
                         foreach ($records as $cr) {
                             $pivot = $cr->pivot;
                             $total += $pivot ? $pivot->commission_amount : 0;
                         }
-                        
+
                         return $total;
                     }),
                 TextColumn::make('sales_commission')
@@ -75,7 +86,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         return PatientPackage::where('salesperson_id', $record->id)
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
@@ -89,25 +100,25 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         // 服务提成
                         $records = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
                             ->get();
-                        
+
                         $serviceTotal = 0;
                         foreach ($records as $cr) {
                             $pivot = $cr->pivot;
                             $serviceTotal += $pivot ? $pivot->commission_amount : 0;
                         }
-                        
+
                         // 销售提成
                         $salesTotal = PatientPackage::where('salesperson_id', $record->id)
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
                             ->sum('sales_commission');
-                        
+
                         return $serviceTotal + $salesTotal;
                     }),
                 TextColumn::make('service_count')
@@ -117,7 +128,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         return $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
@@ -130,7 +141,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         return PatientPackage::where('salesperson_id', $record->id)
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
@@ -152,14 +163,16 @@ class EmployeeCommissionReport extends Page implements HasTable
                         if (isset($data['month'])) {
                             $this->selectedMonth = $data['month'];
                         }
+
                         return $query;
                     })
                     ->indicateUsing(function (array $data): ?string {
-                        if (!isset($data['month'])) {
+                        if (! isset($data['month'])) {
                             return null;
                         }
                         $monthParts = explode('-', $data['month']);
-                        return '统计月份: ' . $monthParts[0] . '年' . $monthParts[1] . '月';
+
+                        return '统计月份: '.$monthParts[0].'年'.$monthParts[1].'月';
                     }),
             ])
             ->headerActions([
@@ -171,6 +184,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $month = $this->selectedMonth ?? now()->format('Y-m');
 
                         $fileName = "员工提成报表_{$month}.xlsx";
+
                         return \Maatwebsite\Excel\Facades\Excel::download(
                             new \App\Exports\EmployeeCommissionExport($month),
                             $fileName
@@ -242,14 +256,14 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $monthParts = explode('-', $this->selectedMonth);
                         $year = $monthParts[0];
                         $month = $monthParts[1];
-                        
+
                         // 服务记录
                         $consumptionRecords = $record->consumptionRecords()
                             ->whereYear('treatment_date', $year)
                             ->whereMonth('treatment_date', $month)
                             ->with(['patient', 'patientPackage'])
                             ->get();
-                        
+
                         $serviceDetails = [];
                         $serviceTotal = 0;
                         foreach ($consumptionRecords as $consumption) {
@@ -262,14 +276,14 @@ class EmployeeCommissionReport extends Page implements HasTable
                                 'commission_amount' => $consumption->pivot->commission_amount,
                             ];
                         }
-                        
+
                         // 销售记录
                         $salesRecords = PatientPackage::where('salesperson_id', $record->id)
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
                             ->with('patient')
                             ->get();
-                        
+
                         $salesDetails = [];
                         $salesTotal = 0;
                         $salesTypeLabels = [
@@ -287,10 +301,10 @@ class EmployeeCommissionReport extends Page implements HasTable
                                 'commission_amount' => $sale->sales_commission,
                             ];
                         }
-                        
+
                         return [
                             'employee_name' => $record->name,
-                            'month' => $year . '年' . $month . '月',
+                            'month' => $year.'年'.$month.'月',
                             'service_commission' => $serviceTotal,
                             'sales_commission' => $salesTotal,
                             'service_records' => $serviceDetails,

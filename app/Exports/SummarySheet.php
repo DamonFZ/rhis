@@ -2,15 +2,15 @@
 
 namespace App\Exports;
 
-use App\Models\User;
 use App\Models\PatientPackage;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class SummarySheet implements FromCollection, WithHeadings, WithTitle, WithMapping
+class SummarySheet implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     protected string $month;
 
@@ -28,7 +28,12 @@ class SummarySheet implements FromCollection, WithHeadings, WithTitle, WithMappi
 
     public function collection(): Collection
     {
-        return User::with(['consumptionRecords' => function ($query) {
+        $firstDayOfMonth = "{$this->year}-{$this->monthNum}-01";
+
+        return User::where(function ($query) use ($firstDayOfMonth) {
+            $query->whereNull('resigned_at')
+                ->orWhere('resigned_at', '>=', $firstDayOfMonth);
+        })->with(['consumptionRecords' => function ($query) {
             $query->whereYear('treatment_date', $this->year)
                 ->whereMonth('treatment_date', $this->monthNum);
         }])->get()->map(function (User $user) {

@@ -25,7 +25,8 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'position',
-        'username', // 新增
+        'username',
+        'resigned_at',
     ];
 
     /**
@@ -46,6 +47,7 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'resigned_at' => 'date',
     ];
 
     public function departments(): BelongsToMany
@@ -64,5 +66,10 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    public function hasResigned(): bool
+    {
+        return ! is_null($this->resigned_at);
     }
 }

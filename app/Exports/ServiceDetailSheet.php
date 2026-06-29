@@ -6,10 +6,10 @@ use App\Models\ConsumptionRecord;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class ServiceDetailSheet implements FromCollection, WithHeadings, WithTitle, WithMapping
+class ServiceDetailSheet implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     protected string $month;
 
@@ -30,9 +30,15 @@ class ServiceDetailSheet implements FromCollection, WithHeadings, WithTitle, Wit
 
     protected function buildFlatData(): Collection
     {
+        $firstDayOfMonth = "{$this->year}-{$this->monthNum}-01";
+
         $records = ConsumptionRecord::with(['patient', 'patientPackage', 'employees'])
             ->whereYear('treatment_date', $this->year)
             ->whereMonth('treatment_date', $this->monthNum)
+            ->whereHas('employees', function ($query) use ($firstDayOfMonth) {
+                $query->whereNull('resigned_at')
+                    ->orWhere('resigned_at', '>=', $firstDayOfMonth);
+            })
             ->get();
 
         $flat = [];

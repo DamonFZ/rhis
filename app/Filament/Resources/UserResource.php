@@ -3,15 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -70,6 +68,14 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('position')
                     ->label('职位')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('resigned_at')
+                    ->label('状态')
+                    ->badge()
+                    ->formatStateUsing(function ($state) {
+                        return $state ? '离职 ('.Carbon::parse($state)->format('Y-m-d').')' : '在职';
+                    })
+                    ->color(fn ($state) => $state ? 'gray' : 'success')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime()
@@ -80,6 +86,30 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('resign')
+                    ->label('办理离职')
+                    ->icon('heroicon-o-user-minus')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record) => is_null($record->resigned_at))
+                    ->form([
+                        Forms\Components\DatePicker::make('resigned_at')
+                            ->label('离职日期')
+                            ->default(now()->format('Y-m-d'))
+                            ->required(),
+                    ])
+                    ->action(function (User $record, array $data): void {
+                        $record->update(['resigned_at' => $data['resigned_at']]);
+                    }),
+                Tables\Actions\Action::make('restore')
+                    ->label('恢复在职')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record) => ! is_null($record->resigned_at))
+                    ->action(function (User $record): void {
+                        $record->update(['resigned_at' => null]);
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

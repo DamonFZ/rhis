@@ -3,6 +3,11 @@
 > 面向康复理疗机构的数字化管理平台，涵盖客户档案、康复评估、套餐管理、财务流水、预约看板、员工提成等核心业务模块。
 
 ---
+## 系统截图
+![01.png](public/image/01.png)
+![02.png](public/image/02.png)
+![03.png](public/image/03.png)
+![04.png](public/image/04.png)
 
 ## 技术栈
 
