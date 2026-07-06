@@ -68,7 +68,7 @@ class PatientProfileResource extends Resource
         return $table
             ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withExists([
                 'physicalAssessments',
-                'consumptionRecords',
+                'imagingRecords',
             ]))
             ->columns([
                 Tables\Columns\TextColumn::make('patient_id')
@@ -83,7 +83,7 @@ class PatientProfileResource extends Resource
                         if ($record->physical_assessments_exists) {
                             $icons .= ' 🧍';
                         }
-                        if ($record->consumption_records_exists) {
+                        if ($record->imaging_records_exists) {
                             $icons .= ' 📋';
                         }
 
