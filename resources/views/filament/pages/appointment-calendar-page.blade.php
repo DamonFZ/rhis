@@ -21,9 +21,16 @@
             height: 100vh !important;
         }
 
+        .fc-timegrid-slot {
+            height: 2.2em !important;
+        }
+
         .fc-timegrid-event .fc-event-main {
             white-space: normal !important;
-            overflow: hidden;
+            overflow: hidden !important;
+            line-height: 1.2 !important;
+            padding: 2px 3px !important;
+            font-size: 0.85em !important;
         }
     </style>
 </x-filament-panels::page>
