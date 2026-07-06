@@ -67,7 +67,7 @@ class PatientProfileResource extends Resource
     {
         return $table
             ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withExists([
-                'imagingRecords',
+                'physicalAssessments',
                 'consumptionRecords',
             ]))
             ->columns([
@@ -80,7 +80,7 @@ class PatientProfileResource extends Resource
                     ->searchable()
                     ->formatStateUsing(function (string $state, \App\Models\PatientProfile $record): string {
                         $icons = '';
-                        if ($record->imaging_records_exists) {
+                        if ($record->physical_assessments_exists) {
                             $icons .= ' 🧍';
                         }
                         if ($record->consumption_records_exists) {
