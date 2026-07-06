@@ -66,6 +66,10 @@ class PatientProfileResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withExists([
+                'imagingRecords',
+                'consumptionRecords',
+            ]))
             ->columns([
                 Tables\Columns\TextColumn::make('patient_id')
                     ->label('客户编号')
@@ -73,7 +77,18 @@ class PatientProfileResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('姓名')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function (string $state, \App\Models\PatientProfile $record): string {
+                        $icons = '';
+                        if ($record->imaging_records_exists) {
+                            $icons .= ' 🧍';
+                        }
+                        if ($record->consumption_records_exists) {
+                            $icons .= ' 📋';
+                        }
+
+                        return $state.$icons;
+                    }),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('联系电话')
                     ->searchable(),
