@@ -49,10 +49,23 @@ class RehabPackageResource extends Resource
                     ->label('总次数')
                     ->numeric()
                     ->default(0),
-                Forms\Components\TextInput::make('validity_days')
-                    ->label('有效期（天）')
-                    ->numeric()
-                    ->default(0),
+                Forms\Components\Fieldset::make('时效设置')
+                    ->schema([
+                        Forms\Components\TextInput::make('validity_days')
+                            ->label('有效期（天）')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('留空或为 0 时，若设置了固定结束日期则忽略此字段'),
+                        Forms\Components\DatePicker::make('valid_start_date')
+                            ->label('固定开始日期')
+                            ->placeholder('留空则不限制')
+                            ->native(false),
+                        Forms\Components\DatePicker::make('valid_end_date')
+                            ->label('固定结束日期')
+                            ->placeholder('留空则不限制')
+                            ->afterOrEqual('valid_start_date')
+                            ->native(false),
+                    ]),
                 Forms\Components\Toggle::make('status')
                     ->label('状态')
                     ->default(true),

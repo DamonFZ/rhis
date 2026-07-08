@@ -209,6 +209,15 @@ class PatientProfileResource extends Resource
                             ->action(function (array $data, \App\Models\PatientProfile $record) {
                                 \Illuminate\Support\Facades\DB::transaction(function () use ($data, $record) {
                                     $rehabPkg = \App\Models\RehabPackage::findOrFail($data['rehab_package_id']);
+
+                                    if ($rehabPkg->valid_end_date && now()->gt($rehabPkg->valid_end_date)) {
+                                        throw new \Exception('该套餐已过固定有效期限，无法购买');
+                                    }
+
+                                    $expiryDate = $rehabPkg->valid_end_date
+                                        ? $rehabPkg->valid_end_date
+                                        : now()->addDays($rehabPkg->validity_days + $rehabPkg->extension_days);
+
                                     $setting = \App\Models\CommissionSetting::first();
                                     $rates = [
                                         1 => ($setting->sales_type_1_rate ?? 3) / 100,
@@ -231,7 +240,7 @@ class PatientProfileResource extends Resource
                                         'extension_days' => $rehabPkg->extension_days,
                                         'is_shareable' => $rehabPkg->is_shareable,
                                         'purchase_date' => now(),
-                                        'expiry_date' => now()->addDays($rehabPkg->validity_days + $rehabPkg->extension_days),
+                                        'expiry_date' => $expiryDate,
                                         'salesperson_id' => $data['salesperson_id'],
                                         'sales_type' => $data['sales_type'],
                                         'sales_commission' => $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03),

@@ -23,6 +23,8 @@ class RehabPackage extends Model
         'extension_days',
         'is_shareable',
         'service_commission',
+        'valid_start_date',
+        'valid_end_date',
     ];
 
     protected $casts = [
@@ -33,7 +35,7 @@ class RehabPackage extends Model
         'is_extendable' => 'boolean',
         'is_shareable' => 'boolean',
         'service_commission' => 'decimal:2',
+        'valid_start_date' => 'date',
+        'valid_end_date' => 'date',
     ];
-
-
 }
