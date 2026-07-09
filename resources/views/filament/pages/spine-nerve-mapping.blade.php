@@ -11,7 +11,7 @@
 
             {{-- 左侧脊柱区 (4 列) --}}
             <div class="col-span-4 bg-slate-50/50 rounded-xl border border-gray-100 flex items-center justify-center p-4 min-h-0">
-                <svg class="w-full h-full max-h-full" viewBox="0 0 200 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-48 h-auto max-h-full" viewBox="0 0 200 620" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                     <rect width="100%" height="100%" fill="none" stroke="#e5e7eb" stroke-dasharray="4"/>
 
                     {{-- 颈椎段 C1-C7 --}}
