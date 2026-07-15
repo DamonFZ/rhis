@@ -1,54 +1,105 @@
-<x-filament-panels::page>
-    <div>
-        {{-- 外部依赖与自定义样式 --}}
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脊柱-内脏神经映射系统 | 徒手医学原理</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans SC"', 'sans-serif'],
+                    },
+                    colors: {
+                        parasympathetic: '#0ea5e9', // 蓝/青色代表副交感(休息/消化)
+                        sympathetic: '#f97316',     // 橙色代表交感(战斗/逃跑)
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
 
-        <style>
-        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .spine-block { transition: all 0.3s ease; }
-        .spine-block:hover { transform: translateX(5px); }
-        .spine-container { position: relative; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spine-block {
+            transition: all 0.3s ease;
+        }
+        
+        .spine-block:hover {
+            transform: translateX(5px);
+        }
+
+        /* 脊柱连接线 */
+        .spine-container {
+            position: relative;
+        }
         .spine-container::before {
-            content: ''; position: absolute; left: 1.5rem; top: 2rem; bottom: 2rem;
-            width: 4px; background-color: #e2e8f0; z-index: 0; border-radius: 2px;
+            content: '';
+            position: absolute;
+            left: 1.5rem; /* 居中对齐图标 */
+            top: 2rem;
+            bottom: 2rem;
+            width: 4px;
+            background-color: #e2e8f0;
+            z-index: 0;
+            border-radius: 2px;
         }
     </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 font-sans">
 
-    {{-- 核心 HTML 骨架 --}}
     <div class="max-w-6xl mx-auto">
-        {{-- 头部信息 --}}
+        <!-- 头部信息 -->
         <header class="text-center mb-10 fade-in">
             <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-wide">
                 <i class="fa-solid fa-bone text-indigo-500 mr-2"></i>脊柱-内脏神经映射系统
             </h1>
             <p class="text-slate-500 max-w-2xl mx-auto text-sm md:text-base">
-                基于现代解剖学与自主神经系统的可视化图谱。探索骨医（整骨师）如何通过徒手干预特定的脊柱节段，打破"体表-内脏"恶性反射弧，重启人体内稳态。
+                基于现代解剖学与自主神经系统的可视化图谱。探索骨医（整骨师）如何通过徒手干预特定的脊柱节段，打破“体表-内脏”恶性反射弧，重启人体内稳态。
             </p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-
-            {{-- 左侧：脊柱导航栏 (占据 4 列) --}}
+            
+            <!-- 左侧：脊柱导航栏 (占据 4 列) -->
             <div class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 fade-in">
                 <h2 class="text-lg font-bold text-slate-700 mb-6 flex items-center">
                     <i class="fa-solid fa-network-wired mr-2 text-slate-400"></i> 选择脊柱节段
                 </h2>
-
+                
                 <div class="spine-container space-y-4 relative z-10" id="spine-nav">
-                    {{-- 导航按钮由 JS 动态生成 --}}
+                    <!-- 导航按钮由 JS 动态生成 -->
                 </div>
             </div>
 
-            {{-- 右侧：详情展示面板 (占据 8 列) --}}
+            <!-- 右侧：详情展示面板 (占据 8 列) -->
             <div class="lg:col-span-8 bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden fade-in relative min-h-[500px]">
-
-                {{-- 顶部彩色装饰条 --}}
+                
+                <!-- 顶部彩色装饰条 -->
                 <div id="panel-header-color" class="h-2 bg-slate-300 w-full transition-colors duration-500"></div>
-
+                
                 <div class="p-8">
-                    {{-- 标题与副标题 --}}
+                    <!-- 标题与副标题 -->
                     <div class="mb-8 border-b border-slate-100 pb-6">
                         <div class="flex items-start justify-between">
                             <div>
@@ -63,40 +114,40 @@
 
                     <div id="content-area" class="hidden">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-
-                            {{-- 支配器官 --}}
+                            
+                            <!-- 支配器官 -->
                             <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
                                 <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center">
                                     <i class="fa-solid fa-heart-pulse mr-2 text-rose-400"></i> 主要支配器官
                                 </h3>
                                 <div id="organs-list" class="flex flex-wrap gap-2">
-                                    {{-- 标签生成 --}}
+                                    <!-- 标签生成 -->
                                 </div>
                             </div>
 
-                            {{-- 常见症状 --}}
+                            <!-- 常见症状 -->
                             <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
                                 <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center">
                                     <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-400"></i> 关联功能性障碍
                                 </h3>
                                 <ul id="symptoms-list" class="space-y-2 text-sm text-slate-600 list-disc list-inside">
-                                    {{-- 列表生成 --}}
+                                    <!-- 列表生成 -->
                                 </ul>
                             </div>
                         </div>
 
-                        {{-- 骨医干预逻辑 --}}
+                        <!-- 骨医干预逻辑 -->
                         <div class="bg-indigo-50/50 rounded-xl p-6 border border-indigo-100">
                             <h3 class="text-md font-bold text-indigo-900 mb-3 flex items-center">
                                 <i class="fa-solid fa-hands-medical mr-2 text-indigo-500"></i> 徒手干预底层逻辑 (生理学依据)
                             </h3>
                             <p id="intervention-logic" class="text-indigo-800/80 text-sm leading-relaxed">
-                                {{-- 逻辑文本 --}}
+                                <!-- 逻辑文本 -->
                             </p>
                         </div>
                     </div>
-
-                    {{-- 初始占位提示 --}}
+                    
+                    <!-- 初始占位提示 -->
                     <div id="empty-state" class="flex flex-col items-center justify-center h-64 text-slate-400">
                         <i class="fa-solid fa-hand-pointer text-4xl mb-4 opacity-50"></i>
                         <p>请点击左侧脊柱节段，探索深层人体网络。</p>
@@ -105,17 +156,13 @@
                 </div>
             </div>
         </div>
-
-        {{-- 底部说明 --}}
+        
+        <!-- 底部说明 -->
         <div class="mt-8 text-center text-xs text-slate-400 fade-in">
             <p><i class="fa-solid fa-circle-info mr-1"></i> 免责声明：本图谱仅供解剖学与生物力学理论探讨。徒手治疗适用于功能性障碍与代偿性疼痛，无法替代器质性病变的现代医疗干预。</p>
         </div>
     </div>
 
-    {{-- Tailwind JIT 防丢色安全屋 --}}
-    <div class="hidden border-indigo-500 bg-indigo-50/30 shadow-md border-transparent text-sky-500 text-orange-500 bg-sky-100 text-sky-700 bg-orange-100 text-orange-700 bg-sky-500 bg-orange-500"></div>
-
-    {{-- Vanilla JS 交互逻辑 --}}
     <script>
         // --- 核心数据配置 ---
         const spineData = {
@@ -186,8 +233,8 @@
                 id: 'lumbarSacral',
                 title: "腰骶段 (T12-L2, S2-S4)",
                 subtitle: "盆腔的「副交感底座」",
-                nerveType: "交感(腰段) & 副交感(段)",
-                sysType: "parasympathetic",
+                nerveType: "交感(腰段) & 副交感(骶段)",
+                sysType: "parasympathetic", // 强调骶骨副交感
                 icon: "fa-person-half-dress",
                 organs: [
                     { name: "大肠/直肠", icon: "fa-poop" },
@@ -209,7 +256,7 @@
         const navContainer = document.getElementById('spine-nav');
         const emptyState = document.getElementById('empty-state');
         const contentArea = document.getElementById('content-area');
-
+        
         // 面板元素
         const pHeaderColor = document.getElementById('panel-header-color');
         const pTitle = document.getElementById('panel-title');
@@ -263,7 +310,7 @@
             // 2. 隐藏初始状态，显示内容区 (添加渐变动画效果)
             emptyState.classList.add('hidden');
             contentArea.classList.remove('hidden');
-
+            
             // 重置动画
             contentArea.classList.remove('fade-in');
             void contentArea.offsetWidth; // 触发重排
@@ -306,7 +353,10 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             initNav();
+            // 可选：默认展开第一项
+            // selectRegion('cervical');
         });
+
     </script>
-    </div>
-</x-filament-panels::page>
+</body>
+</html>
