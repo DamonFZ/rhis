@@ -37,3 +37,7 @@ Route::prefix('mobile')->middleware($mobileMiddlewares)->group(function () {
     Route::get('records', [\App\Http\Controllers\Mobile\ImagingController::class, 'index'])->name('mobile.records.index');
     Route::get('records/compare', [\App\Http\Controllers\Mobile\ImagingController::class, 'compare'])->name('mobile.records.compare');
 });
+
+Route::get('/spine-mapping-standalone', function () {
+    return view('spine-mapping-standalone');
+})->name('spine.mapping.standalone')->middleware(['web', 'auth']);

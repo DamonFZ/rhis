@@ -17,6 +17,16 @@ class SpineNerveMappingPage extends Page
 
     protected static ?string $navigationGroup = '康复看板';
 
+    public static function getNavigationUrl(): string
+    {
+        return route('spine.mapping.standalone');
+    }
+
+    public static function shouldOpenNavigationUrlInNewTab(): bool
+    {
+        return true;
+    }
+
     public function getMaxContentWidth(): MaxWidth | string | null
     {
         return MaxWidth::Full;
