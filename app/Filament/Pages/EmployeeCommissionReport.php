@@ -269,9 +269,10 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $serviceTotal = 0;
                         foreach ($consumptionRecords as $consumption) {
                             $serviceTotal += $consumption->pivot->commission_amount;
+                            $isAnonymous = $consumption->is_anonymous;
                             $serviceDetails[] = [
-                                'patient_name' => $consumption->patient ? $consumption->patient->name : '未知',
-                                'package_name' => $consumption->patientPackage ? $consumption->patientPackage->package_name : '未知',
+                                'patient_name' => $isAnonymous ? '散客 (无档案)' : ($consumption->patient ? $consumption->patient->name : '未知'),
+                                'package_name' => $isAnonymous ? '散客消费 ¥'.number_format($consumption->amount ?? 0, 2) : ($consumption->patientPackage ? $consumption->patientPackage->package_name : '未知'),
                                 'treatment_date' => $consumption->treatment_date->format('Y-m-d'),
                                 'deducted_sessions' => $consumption->deducted_sessions,
                                 'commission_amount' => $consumption->pivot->commission_amount,

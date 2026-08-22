@@ -43,8 +43,9 @@ class ServiceDetailSheet implements FromCollection, WithHeadings, WithMapping, W
 
         $flat = [];
         foreach ($records as $record) {
-            $patientName = $record->patient ? $record->patient->name : '未知';
-            $packageName = $record->patientPackage ? $record->patientPackage->package_name : '未知';
+            $isAnonymous = $record->is_anonymous;
+            $patientName = $isAnonymous ? '散客 (无档案)' : ($record->patient ? $record->patient->name : '未知');
+            $packageName = $isAnonymous ? '散客消费 ¥'.number_format($record->amount ?? 0, 2) : ($record->patientPackage ? $record->patientPackage->package_name : '未知');
             $treatmentDate = $record->treatment_date->format('Y-m-d');
             $deductedSessions = $record->deducted_sessions;
 

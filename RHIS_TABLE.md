@@ -173,9 +173,11 @@
 | 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注           |
 | ------------------- | --------- | --- | ----- | --- | ------------ |
 | id                  | bigint    | 20  | 否    | 自增  | 主键           |
-| patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID       |
+| patient_profile_id  | bigint    | 20  | 是    | -   | 关联客户ID（散客时为空） |
+| is_anonymous        | boolean   | -   | 否    | false | 是否为无档案散客 |
 | patient_package_id  | bigint    | 20  | 是    | -   | 关联客户套餐包ID   |
 | package_name        | varchar   | 200 | 是    | -   | 套餐名称         |
+| amount              | decimal   | 10,2 | 是   | -   | 服务金额（散客开单时使用） |
 | deducted_sessions   | int       | 11  | 否    | 1   | 本次扣减次数       |
 | remaining_sessions  | int       | 11  | 否    | 0   | 剩余次数         |
 | treatment_date      | date      | -   | 否    | -   | 康复日期         |
@@ -184,7 +186,7 @@
 | updated_at          | timestamp | -   | 是    | -   | 更新时间         |
 
 **外键：**
-- `patient_profile_id` → `patient_profiles.id`（级联删除）
+- `patient_profile_id` → `patient_profiles.id`（删除时设为 null）
 - `patient_package_id` → `patient_packages.id`（删除时设为 null）
 
 **关联关系：**

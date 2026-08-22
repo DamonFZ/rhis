@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
-use App\Models\PatientPackage;
 
 class ConsumptionRecord extends Model
 {
@@ -14,6 +13,8 @@ class ConsumptionRecord extends Model
 
     protected $casts = [
         'treatment_date' => 'date',
+        'is_anonymous' => 'boolean',
+        'amount' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -21,8 +22,18 @@ class ConsumptionRecord extends Model
         parent::boot();
 
         static::creating(function ($record) {
+            // 散客记录跳过套餐相关的自动逻辑
+            if ($record->is_anonymous) {
+                $record->patient_package_id = null;
+                $record->package_name = $record->package_name ?? '散客消费';
+                $record->remaining_sessions = 0;
+                $record->deducted_sessions = $record->deducted_sessions ?? 1;
+
+                return;
+            }
+
             // 自动设置套餐名称
-            if ($record->patient_package_id && !$record->package_name) {
+            if ($record->patient_package_id && ! $record->package_name) {
                 $package = PatientPackage::find($record->patient_package_id);
                 if ($package) {
                     $record->package_name = $package->package_name;
@@ -41,18 +52,18 @@ class ConsumptionRecord extends Model
                     } else {
                         $newRemaining = $package->remaining_sessions - $record->deducted_sessions;
                     }
-                    
+
                     // 使用数据库事务确保数据一致性
                     DB::transaction(function () use ($package, $record, $newRemaining) {
                         $package->remaining_sessions = $newRemaining;
-                        
+
                         // 如果剩余次数为0，标记为已完成
                         if ($newRemaining <= 0) {
                             $package->markAsCompleted();
                         } else {
                             $package->save();
                         }
-                        
+
                         // 更新记录的剩余次数字段
                         $record->remaining_sessions = $newRemaining;
                     });

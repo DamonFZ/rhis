@@ -46,6 +46,7 @@ class ConsumptionRecordResource extends Resource
     {
         return $table
             ->defaultSort('treatment_date', 'desc')
+            ->modifyQueryUsing(fn ($query) => $query->with(['patient', 'employees']))
             ->columns([
                 Tables\Columns\TextColumn::make('treatment_date')
                     ->label('康复日期')
@@ -55,11 +56,30 @@ class ConsumptionRecordResource extends Resource
                 Tables\Columns\TextColumn::make('patient.name')
                     ->label('客户名称')
                     ->weight('bold')
+                    ->formatStateUsing(function ($state, ConsumptionRecord $record): string {
+                        if ($record->is_anonymous || $record->patient_profile_id === null) {
+                            return '散客 (无档案)';
+                        }
+
+                        return $state ?? '';
+                    })
+                    ->badge(function (ConsumptionRecord $record): bool {
+                        return $record->is_anonymous || $record->patient_profile_id === null;
+                    })
+                    ->color(function (ConsumptionRecord $record): string {
+                        return $record->is_anonymous ? 'gray' : 'primary';
+                    })
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('package_name')
                     ->label('关联套餐')
                     ->searchable(),
+
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('金额')
+                    ->money('CNY')
+                    ->visible(fn (ConsumptionRecord $record): bool => $record->is_anonymous)
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('users.name')
                     ->label('康复师')
@@ -91,6 +111,7 @@ class ConsumptionRecordResource extends Resource
                     ->label('查看档案')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('primary')
+                    ->visible(fn (ConsumptionRecord $record): bool => ! $record->is_anonymous && $record->patient_profile_id !== null)
                     ->url(fn (ConsumptionRecord $record): string => PatientProfileResource::getUrl('edit', ['record' => $record->patient_profile_id])),
             ])
             ->bulkActions([

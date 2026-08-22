@@ -389,7 +389,7 @@
 
 ### 8.1 全量康复记录只读看板
 
-**功能描述：** 集中展示所有客户的划扣与康复日志，仅提供浏览和跳转能力，严禁在此页面进行增删改操作。
+**功能描述：** 集中展示所有客户的划扣与康复日志，仅提供浏览和跳转能力，支持散客/体验客户快捷开单。
 
 | 功能点 | 状态 | 说明 |
 | ------ | ---- | ---- |
@@ -397,13 +397,21 @@
 | 权限控制 | ✅ 已完成 | 重写 `canCreate()`、`canEdit()`、`canDelete()` 返回 false |
 | 默认排序 | ✅ 已完成 | 按康复日期倒序排列 |
 | 数据列展示 | ✅ 已完成 | 康复日期、客户名称（加粗）、关联套餐、康复师（badge）、消耗次数（badge）、康复内容/备注（截断+tooltip） |
-| 查看档案跳转 | ✅ 已完成 | 自定义 Action 点击跳转到该客户的档案编辑页 |
+| 查看档案跳转 | ✅ 已完成 | 自定义 Action 点击跳转到该客户的档案编辑页（散客时隐藏） |
 | 中文标题 | ✅ 已完成 | 页面标题和导航标签均为中文"康复记录" |
 | 导航分组 | ✅ 已完成 | 归入"数据报表"导航组 |
+| 散客/体验开单 | ✅ 已完成 | 列表页头部"散客/体验开单"按钮，快捷创建无档案客户的消费记录并自动计算康复师提成 |
+| 散客标识 | ✅ 已完成 | 客户名称列自动显示灰色"散客 (无档案)"徽章，金额列仅散客可见 |
+| 散客提成兼容 | ✅ 已完成 | 员工提成报表、Excel 导出均兼容散客记录，按绑定康复师正常计算服务提成 |
 
 **涉及文件：**
 - `app/Filament/Resources/ConsumptionRecordResource.php`
 - `app/Filament/Resources/ConsumptionRecordResource/Pages/ManageConsumptionRecords.php`
+- `app/Models/ConsumptionRecord.php`
+- `app/Filament/Pages/EmployeeCommissionReport.php`
+- `app/Exports/ServiceDetailSheet.php`
+- `database/migrations/2026_08_22_221341_modify_patient_profile_id_nullable_on_consumption_records_table.php`
+- `database/migrations/2026_08_22_221512_add_amount_to_consumption_records_table.php`
 
 ---
 
