@@ -71,6 +71,24 @@ class ConsumptionRecordResource extends Resource
                     })
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('source_type')
+                    ->label('类型')
+                    ->badge()
+                    ->formatStateUsing(function ($state, ?ConsumptionRecord $record): string {
+                        if (! $record) {
+                            return '';
+                        }
+
+                        return ConsumptionRecord::$sourceTypeLabels[$state] ?? $state;
+                    })
+                    ->color(function (?ConsumptionRecord $record): string {
+                        if (! $record) {
+                            return 'gray';
+                        }
+
+                        return $record->source_type === ConsumptionRecord::SOURCE_MEMBER ? 'primary' : 'warning';
+                    }),
+
                 Tables\Columns\TextColumn::make('package_name')
                     ->label('关联套餐')
                     ->searchable(),
@@ -83,10 +101,12 @@ class ConsumptionRecordResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('users.name')
+                Tables\Columns\TextColumn::make('employees.name')
                     ->label('康复师')
                     ->badge()
-                    ->searchable(),
+                    ->separator(', ')
+                    ->searchable()
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('deducted_sessions')
                     ->label('消耗次数')

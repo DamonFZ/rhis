@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ConsumptionRecordResource\Pages;
 use App\Filament\Resources\ConsumptionRecordResource;
 use App\Models\CommissionSetting;
 use App\Models\ConsumptionRecord;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -28,15 +29,26 @@ class ManageConsumptionRecords extends ManageRecords
                 ->modalHeading('散客/体验开单')
                 ->modalSubmitActionLabel('确认开单')
                 ->form([
+                    Select::make('source_type')
+                        ->label('开单类型')
+                        ->options([
+                            'member' => '会员',
+                            'trial' => '体验/散客',
+                        ])
+                        ->default('trial')
+                        ->required()
+                        ->reactive(),
                     TextInput::make('amount')
                         ->label('金额')
                         ->numeric()
                         ->prefix('¥')
+                        ->default(0)
                         ->required(),
                     Select::make('therapists')
                         ->label('康复师')
                         ->multiple()
-                        ->relationship('employees', 'name')
+                        ->options(fn () => User::pluck('name', 'id')->toArray())
+                        ->searchable()
                         ->required()
                         ->helperText('提成将在选中的康复师间平分'),
                     DatePicker::make('treatment_date')
@@ -49,13 +61,16 @@ class ManageConsumptionRecords extends ManageRecords
                 ])
                 ->action(function (array $data): void {
                     $therapistIds = $data['therapists'] ?? [];
+                    $sourceType = $data['source_type'] ?? 'trial';
+                    $amount = $data['amount'] ?? 0;
 
                     $record = ConsumptionRecord::create([
                         'is_anonymous' => true,
                         'patient_profile_id' => null,
                         'patient_package_id' => null,
                         'package_name' => '散客消费',
-                        'amount' => $data['amount'],
+                        'source_type' => $sourceType,
+                        'amount' => $amount,
                         'deducted_sessions' => 1,
                         'remaining_sessions' => 0,
                         'treatment_date' => $data['treatment_date'],

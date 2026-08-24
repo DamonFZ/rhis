@@ -396,13 +396,16 @@
 | ConsumptionRecord Resource | ✅ 已完成 | 使用 `--simple` 参数生成，仅保留 List 页面 |
 | 权限控制 | ✅ 已完成 | 重写 `canCreate()`、`canEdit()`、`canDelete()` 返回 false |
 | 默认排序 | ✅ 已完成 | 按康复日期倒序排列 |
-| 数据列展示 | ✅ 已完成 | 康复日期、客户名称（加粗）、关联套餐、康复师（badge）、消耗次数（badge）、康复内容/备注（截断+tooltip） |
+| 数据列展示 | ✅ 已完成 | 康复日期、类型标签、客户名称（加粗）、关联套餐、康复师（badge）、消耗次数（badge）、康复内容/备注（截断+tooltip） |
 | 查看档案跳转 | ✅ 已完成 | 自定义 Action 点击跳转到该客户的档案编辑页（散客时隐藏） |
 | 中文标题 | ✅ 已完成 | 页面标题和导航标签均为中文"康复记录" |
 | 导航分组 | ✅ 已完成 | 归入"数据报表"导航组 |
 | 散客/体验开单 | ✅ 已完成 | 列表页头部"散客/体验开单"按钮，快捷创建无档案客户的消费记录并自动计算康复师提成 |
 | 散客标识 | ✅ 已完成 | 客户名称列自动显示灰色"散客 (无档案)"徽章，金额列仅散客可见 |
 | 散客提成兼容 | ✅ 已完成 | 员工提成报表、Excel 导出均兼容散客记录，按绑定康复师正常计算服务提成 |
+| 开单类型标记 | ✅ 已完成 | source_type 字段区分"会员"与"体验/散客"，表格列以彩色 badge 展示 |
+| 康复师直接列表 | ✅ 已完成 | 开单表单康复师字段改为直接列出全部员工选项，支持多选+搜索 |
+| 金额零元支持 | ✅ 已完成 | 开单金额默认值为0元，允许0金额开单 |
 
 **涉及文件：**
 - `app/Filament/Resources/ConsumptionRecordResource.php`
@@ -412,6 +415,7 @@
 - `app/Exports/ServiceDetailSheet.php`
 - `database/migrations/2026_08_22_221341_modify_patient_profile_id_nullable_on_consumption_records_table.php`
 - `database/migrations/2026_08_22_221512_add_amount_to_consumption_records_table.php`
+- `database/migrations/2026_08_24_152733_add_source_type_to_consumption_records_table.php`
 
 ---
 
