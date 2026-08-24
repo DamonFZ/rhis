@@ -34,7 +34,7 @@ class ConsumptionRecord extends Model
             // 散客记录跳过套餐相关的自动逻辑
             if ($record->is_anonymous) {
                 $record->patient_package_id = null;
-                $record->package_name = $record->package_name ?? '散客消费';
+                $record->package_name = $record->package_name ?? '单次体验';
                 $record->remaining_sessions = 0;
                 $record->deducted_sessions = $record->deducted_sessions ?? 1;
 

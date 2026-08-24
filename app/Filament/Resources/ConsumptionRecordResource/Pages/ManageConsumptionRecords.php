@@ -58,7 +58,7 @@ class ManageConsumptionRecords extends ManageRecords
                         'is_anonymous' => true,
                         'patient_profile_id' => null,
                         'patient_package_id' => null,
-                        'package_name' => '散客消费',
+                        'package_name' => '单次体验',
                         'source_type' => ConsumptionRecord::SOURCE_TRIAL,
                         'amount' => $amount,
                         'deducted_sessions' => 1,
