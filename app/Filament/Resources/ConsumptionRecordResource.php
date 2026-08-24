@@ -56,18 +56,18 @@ class ConsumptionRecordResource extends Resource
                 Tables\Columns\TextColumn::make('patient.name')
                     ->label('客户名称')
                     ->weight('bold')
-                    ->formatStateUsing(function ($state, ConsumptionRecord $record): string {
-                        if ($record->is_anonymous || $record->patient_profile_id === null) {
+                    ->formatStateUsing(function ($state, ?ConsumptionRecord $record): string {
+                        if ($record && ($record->is_anonymous || $record->patient_profile_id === null)) {
                             return '散客 (无档案)';
                         }
 
                         return $state ?? '';
                     })
-                    ->badge(function (ConsumptionRecord $record): bool {
-                        return $record->is_anonymous || $record->patient_profile_id === null;
+                    ->badge(function (?ConsumptionRecord $record): bool {
+                        return $record && ($record->is_anonymous || $record->patient_profile_id === null);
                     })
-                    ->color(function (ConsumptionRecord $record): string {
-                        return $record->is_anonymous ? 'gray' : 'primary';
+                    ->color(function (?ConsumptionRecord $record): string {
+                        return $record && $record->is_anonymous ? 'gray' : 'primary';
                     })
                     ->searchable(),
 
@@ -78,7 +78,9 @@ class ConsumptionRecordResource extends Resource
                 Tables\Columns\TextColumn::make('amount')
                     ->label('金额')
                     ->money('CNY')
-                    ->visible(fn (ConsumptionRecord $record): bool => $record->is_anonymous)
+                    ->visible(function (?ConsumptionRecord $record): bool {
+                        return $record && $record->is_anonymous;
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('users.name')
@@ -111,8 +113,16 @@ class ConsumptionRecordResource extends Resource
                     ->label('查看档案')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('primary')
-                    ->visible(fn (ConsumptionRecord $record): bool => ! $record->is_anonymous && $record->patient_profile_id !== null)
-                    ->url(fn (ConsumptionRecord $record): string => PatientProfileResource::getUrl('edit', ['record' => $record->patient_profile_id])),
+                    ->visible(function (?ConsumptionRecord $record): bool {
+                        return $record && ! $record->is_anonymous && $record->patient_profile_id !== null;
+                    })
+                    ->url(function (?ConsumptionRecord $record): ?string {
+                        if (! $record || $record->is_anonymous || $record->patient_profile_id === null) {
+                            return null;
+                        }
+
+                        return PatientProfileResource::getUrl('edit', ['record' => $record->patient_profile_id]);
+                    }),
             ])
             ->bulkActions([
                 //
