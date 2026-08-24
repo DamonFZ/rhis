@@ -17,13 +17,13 @@ class ConsumptionRecord extends Model
         'amount' => 'decimal:2',
     ];
 
-    public const SOURCE_MEMBER = 'member';
+    public const SOURCE_MEMBER = 0;
 
-    public const SOURCE_TRIAL = 'trial';
+    public const SOURCE_TRIAL = 1;
 
     public static array $sourceTypeLabels = [
         self::SOURCE_MEMBER => '会员',
-        self::SOURCE_TRIAL => '体验/散客',
+        self::SOURCE_TRIAL => '体验',
     ];
 
     protected static function boot()

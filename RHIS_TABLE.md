@@ -175,7 +175,7 @@
 | id                  | bigint    | 20  | 否    | 自增  | 主键           |
 | patient_profile_id  | bigint    | 20  | 是    | -   | 关联客户ID（散客时为空） |
 | is_anonymous        | boolean   | -   | 否    | false | 是否为无档案散客 |
-| source_type         | varchar   | 20  | 否    | member | 开单类型：member-会员，trial-体验/散客 |
+| source_type         | tinyint   | -   | 否    | 0   | 开单类型：0-会员，1-体验 |
 | patient_package_id  | bigint    | 20  | 是    | -   | 关联客户套餐包ID   |
 | package_name        | varchar   | 200 | 是    | -   | 套餐名称         |
 | amount              | decimal   | 10,2 | 是   | -   | 服务金额（散客开单时使用） |

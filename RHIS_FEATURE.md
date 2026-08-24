@@ -403,7 +403,7 @@
 | 散客/体验开单 | ✅ 已完成 | 列表页头部"散客/体验开单"按钮，快捷创建无档案客户的消费记录并自动计算康复师提成 |
 | 散客标识 | ✅ 已完成 | 客户名称列自动显示灰色"散客 (无档案)"徽章，金额列仅散客可见 |
 | 散客提成兼容 | ✅ 已完成 | 员工提成报表、Excel 导出均兼容散客记录，按绑定康复师正常计算服务提成 |
-| 开单类型标记 | ✅ 已完成 | source_type 字段区分"会员"与"体验/散客"，表格列以彩色 badge 展示 |
+| 开单类型标记 | ✅ 已完成 | source_type 字段：0-会员，1-体验。散客开单默认体验，客户档案开单默认会员。表格以彩色badge展示 |
 | 康复师直接列表 | ✅ 已完成 | 开单表单康复师字段改为直接列出全部员工选项，支持多选+搜索 |
 | 金额零元支持 | ✅ 已完成 | 开单金额默认值为0元，允许0金额开单 |
 
@@ -416,6 +416,7 @@
 - `database/migrations/2026_08_22_221341_modify_patient_profile_id_nullable_on_consumption_records_table.php`
 - `database/migrations/2026_08_22_221512_add_amount_to_consumption_records_table.php`
 - `database/migrations/2026_08_24_152733_add_source_type_to_consumption_records_table.php`
+- `database/migrations/2026_08_24_154729_change_source_type_to_tinyint_on_consumption_records_table.php`
 
 ---
 

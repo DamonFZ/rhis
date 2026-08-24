@@ -76,6 +76,8 @@ class ConsumptionRecordsRelationManager extends RelationManager
                     ->default(0),
                 Forms\Components\Hidden::make('package_name')
                     ->default(''),
+                Forms\Components\Hidden::make('source_type')
+                    ->default(ConsumptionRecord::SOURCE_MEMBER),
                 Forms\Components\Placeholder::make('warning_message')
                     ->label('')
                     ->columnSpanFull()

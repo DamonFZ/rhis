@@ -29,15 +29,6 @@ class ManageConsumptionRecords extends ManageRecords
                 ->modalHeading('散客/体验开单')
                 ->modalSubmitActionLabel('确认开单')
                 ->form([
-                    Select::make('source_type')
-                        ->label('开单类型')
-                        ->options([
-                            'member' => '会员',
-                            'trial' => '体验/散客',
-                        ])
-                        ->default('trial')
-                        ->required()
-                        ->reactive(),
                     TextInput::make('amount')
                         ->label('金额')
                         ->numeric()
@@ -61,7 +52,6 @@ class ManageConsumptionRecords extends ManageRecords
                 ])
                 ->action(function (array $data): void {
                     $therapistIds = $data['therapists'] ?? [];
-                    $sourceType = $data['source_type'] ?? 'trial';
                     $amount = $data['amount'] ?? 0;
 
                     $record = ConsumptionRecord::create([
@@ -69,7 +59,7 @@ class ManageConsumptionRecords extends ManageRecords
                         'patient_profile_id' => null,
                         'patient_package_id' => null,
                         'package_name' => '散客消费',
-                        'source_type' => $sourceType,
+                        'source_type' => ConsumptionRecord::SOURCE_TRIAL,
                         'amount' => $amount,
                         'deducted_sessions' => 1,
                         'remaining_sessions' => 0,
