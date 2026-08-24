@@ -5,12 +5,12 @@ namespace App\Filament\Resources\ConsumptionRecordResource\Pages;
 use App\Filament\Resources\ConsumptionRecordResource;
 use App\Models\CommissionSetting;
 use App\Models\ConsumptionRecord;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Tables\Actions\Action;
 
 class ManageConsumptionRecords extends ManageRecords
 {
