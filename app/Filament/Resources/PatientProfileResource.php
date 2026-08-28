@@ -360,10 +360,8 @@ class PatientProfileResource extends Resource
                     ->modalCancelAction(false)
                     ->modalContent(function ($record) {
                         $sign = hash_hmac('sha256', $record->id, config('app.key'));
-                        $url = route('mobile.bind', [
-                            'patient_id' => $record->id,
-                            'sign' => $sign,
-                        ]);
+                        $schemeAndHost = request()->getSchemeAndHttpHost();
+                        $url = $schemeAndHost.'/mobile/bind?patient_id='.$record->id.'&sign='.urlencode($sign);
 
                         $qrCode = QrCode::size(250)->margin(1)->generate($url);
 
