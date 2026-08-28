@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'set.mobile.locale' => \App\Http\Middleware\SetMobileLocale::class,
         'wechat.oauth' => \Overtrue\LaravelWeChat\Middleware\OAuthAuthenticate::class,
+        'wechat.proxy.auth' => \App\Http\Middleware\WeChatProxyAuth::class,
     ];
 }

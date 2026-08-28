@@ -17,15 +17,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('mobile')->middleware(['web', 'set.mobile.locale'])->group(function () {
+Route::prefix('mobile')->middleware(['web', 'set.mobile.locale', 'wechat.proxy.auth'])->group(function () {
     Route::get('bind', [\App\Http\Controllers\Mobile\AuthController::class, 'bindConfirm'])->name('mobile.bind');
 });
 
 // 动态分配中间件
-$mobileMiddlewares = ['web', 'set.mobile.locale'];
-if (! app()->isLocal()) {
-    $mobileMiddlewares[] = 'wechat.oauth:default,snsapi_base';
-}
+$mobileMiddlewares = ['web', 'set.mobile.locale', 'wechat.proxy.auth'];
 
 Route::prefix('mobile')->middleware($mobileMiddlewares)->group(function () {
     Route::get('lang/{locale}', [\App\Http\Controllers\Mobile\LocaleController::class, 'switch'])->name('mobile.lang.switch');

@@ -18,31 +18,9 @@ class AuthController extends Controller
             abort(403, '访问被拒绝：签名校验失败。');
         }
 
-        // 获取扫码用户的微信 OpenID
-        if (app()->isLocal()) {
-            $openid = session('easywechat.oauth_user.default', 'mock_openid_local_dev_123');
-        } else {
-            $app = app(\EasyWeChat\OfficialAccount\Application::class);
-            $oauth = $app->getOAuth();
-
-            // 优先拦截并处理带有 code 的回调请求
-            if ($request->has('code')) {
-                $user = $oauth->userFromCode($request->code);
-                session(['easywechat.oauth_user.default' => $user]);
-
-                return redirect()->to($request->url().'?'.http_build_query($request->except(['code', 'state'])));
-            }
-
-            // 如果没有 session，发起微信授权请求
-            if (! session()->has('easywechat.oauth_user.default')) {
-                $authUrl = $oauth->scopes(['snsapi_base'])->redirect($request->fullUrl());
-
-                return redirect()->away($authUrl);
-            }
-
-            $wechatUser = session('easywechat.oauth_user.default');
-            $openid = is_array($wechatUser) ? ($wechatUser['id'] ?? null) : ($wechatUser ? $wechatUser->getId() : null);
-        }
+        // 从 session 获取 openid（由 WeChatProxyAuth 中间件写入）
+        $wechatUser = session('easywechat.oauth_user.default');
+        $openid = is_array($wechatUser) ? ($wechatUser['id'] ?? null) : null;
 
         if (! $openid) {
             return back()->with('error', '未获取到微信授权信息。');
