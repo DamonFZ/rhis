@@ -33,7 +33,7 @@ class Appointment extends Model
     public function getClientNameAttribute(): string
     {
         return $this->is_guest
-            ? trim(($this->guest_name ?? '').' (散客)')
+            ? trim(($this->guest_name ?? '').' (无档案)')
             : (optional($this->patientProfile)->name ?? '未知客户');
     }
 

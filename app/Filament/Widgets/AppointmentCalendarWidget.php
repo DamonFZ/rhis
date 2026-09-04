@@ -55,7 +55,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     {
         return [
             Forms\Components\Toggle::make('is_guest')
-                ->label('无档案散客预约')
+                ->label('无档案预约')
                 ->live(),
             Forms\Components\Select::make('patient_profile_id')
                 ->label('预约客户')
@@ -64,7 +64,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
                 ->required(fn (\Filament\Forms\Get $get) => ! $get('is_guest'))
                 ->hidden(fn (\Filament\Forms\Get $get) => $get('is_guest')),
             Forms\Components\TextInput::make('guest_name')
-                ->label('散客姓名')
+                ->label('姓名')
                 ->required(fn (\Filament\Forms\Get $get) => $get('is_guest'))
                 ->visible(fn (\Filament\Forms\Get $get) => $get('is_guest')),
             Forms\Components\Select::make('therapist_id')
