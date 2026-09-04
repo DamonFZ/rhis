@@ -327,7 +327,9 @@
 | 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                    |
 | ------------------- | --------- | --- | ----- | --- | --------------------- |
 | id                  | bigint    | 20  | 否    | 自增  | 主键                    |
-| patient_profile_id  | bigint    | 20  | 否    | -   | 关联客户ID                |
+| patient_profile_id  | bigint    | 20  | 是    | -   | 关联客户ID（散客预约时为空）     |
+| is_guest            | boolean   | -   | 否    | false | 是否为散客预约              |
+| guest_name          | varchar   | 255 | 是    | -   | 散客姓名                 |
 | therapist_id        | bigint    | 20  | 是    | -   | 关联康复师ID（users表），可空   |
 | start_time          | datetime  | -   | 否    | -   | 预约开始时间               |
 | end_time            | datetime  | -   | 否    | -   | 预约结束时间               |
@@ -337,7 +339,7 @@
 | updated_at          | timestamp | -   | 是    | -   | 更新时间                  |
 
 **外键：**
-- `patient_profile_id` → `patient_profiles.id`（级联删除）
+- `patient_profile_id` → `patient_profiles.id`（nullOnDelete）
 - `therapist_id` → `users.id`（级联删除）
 
 **索引：** `(start_time, end_time)`, `(patient_profile_id, therapist_id)`

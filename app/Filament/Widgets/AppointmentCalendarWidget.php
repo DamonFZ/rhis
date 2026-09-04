@@ -54,11 +54,19 @@ class AppointmentCalendarWidget extends FullCalendarWidget
     public function getFormSchema(): array
     {
         return [
+            Forms\Components\Toggle::make('is_guest')
+                ->label('无档案散客预约')
+                ->live(),
             Forms\Components\Select::make('patient_profile_id')
                 ->label('预约客户')
                 ->options(\App\Models\PatientProfile::pluck('name', 'id'))
                 ->searchable()
-                ->required(),
+                ->required(fn (\Filament\Forms\Get $get) => ! $get('is_guest'))
+                ->hidden(fn (\Filament\Forms\Get $get) => $get('is_guest')),
+            Forms\Components\TextInput::make('guest_name')
+                ->label('散客姓名')
+                ->required(fn (\Filament\Forms\Get $get) => $get('is_guest'))
+                ->visible(fn (\Filament\Forms\Get $get) => $get('is_guest')),
             Forms\Components\Select::make('therapist_id')
                 ->label('康复师')
                 ->options(\App\Models\User::pluck('name', 'id'))
@@ -121,7 +129,7 @@ class AppointmentCalendarWidget extends FullCalendarWidget
 
                 return [
                     'id' => $appointment->id,
-                    'title' => ($appointment->patientProfile?->name ?? '未知客户').$remarkText,
+                    'title' => $appointment->client_name.$remarkText,
                     'start' => $appointment->start_time->toDateTimeString(),
                     'end' => $appointment->end_time->toDateTimeString(),
                     'color' => $color,

@@ -16,13 +16,26 @@ class Appointment extends Model
         'end_time',
         'remark',
         'status',
+        'is_guest',
+        'guest_name',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'status' => 'integer',
+        'is_guest' => 'boolean',
     ];
+
+    /**
+     * 预约客户展示名称（统一访问器：兼容会员与散客）
+     */
+    public function getClientNameAttribute(): string
+    {
+        return $this->is_guest
+            ? trim(($this->guest_name ?? '').' (散客)')
+            : (optional($this->patientProfile)->name ?? '未知客户');
+    }
 
     public function patientProfile()
     {

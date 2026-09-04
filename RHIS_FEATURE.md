@@ -375,10 +375,14 @@
 | 全屏自动刷新 | ✅ 已完成 | 5 分钟自动刷新（`$pollingInterval = '300s'`） |
 | 行高自适应 | ✅ 已完成 | FullCalendar `expandRows => true` 自动拉伸行高填满容器 |
 | 文本换行 | ✅ 已完成 | `.fc-timegrid-event .fc-event-main { white-space: normal }` 强制换行 |
+| 散客预约支持 | ✅ 已完成 | 预约表单新增「无档案散客预约」Toggle，开启后隐藏客户下拉，显示散客姓名输入框 |
+| 散客视图兼容 | ✅ 已完成 | 新增 `client_name` 访问器，日历看板统一显示"姓名 (散客)"或会员姓名 |
 
 **涉及文件：**
 - `app/Models/Appointment.php`
 - `database/migrations/2026_06_08_160009_create_appointments_table.php`
+- `database/migrations/2026_06_18_225608_make_appointments_therapist_id_nullable.php`
+- `database/migrations/2026_09_04_142650_add_guest_support_to_appointments_table.php`
 - `app/Filament/Widgets/AppointmentCalendarWidget.php`
 - `app/Filament/Pages/AppointmentCalendarPage.php`
 - `resources/views/filament/pages/appointment-calendar-page.blade.php`
