@@ -99,8 +99,7 @@ class PatientProfileResource extends Resource
                     ->badge()
                     ->separator(',')
                     ->limitList(2)
-                    ->expandableLimitedList()
-                    ->default('无有效套餐'),
+                    ->expandableLimitedList(),
                 Tables\Columns\TextColumn::make('total_remaining_sessions')
                     ->label('可用总次数')
                     ->state(function (\Illuminate\Database\Eloquent\Model $record): int {
