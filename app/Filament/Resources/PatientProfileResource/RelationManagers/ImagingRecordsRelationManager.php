@@ -124,33 +124,27 @@ class ImagingRecordsRelationManager extends RelationManager
                                 Forms\Components\FileUpload::make('photo_urls.front')
                                     ->label('站姿正面')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('front'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('front')),
                                 Forms\Components\FileUpload::make('photo_urls.forward_bending')
                                     ->label('站姿弯腰正面')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('forward_bending'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('forward_bending')),
                                 Forms\Components\FileUpload::make('photo_urls.back')
                                     ->label('站姿背面')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back')),
                                 Forms\Components\FileUpload::make('photo_urls.left_side')
                                     ->label('站姿侧面')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('left_side'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('left_side')),
                                 Forms\Components\FileUpload::make('photo_urls.right_side')
                                     ->label('侧面弯腰')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('right_side'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('right_side')),
                                 Forms\Components\FileUpload::make('photo_urls.back_sitting')
                                     ->label('坐姿背面')
                                     ->image()
-                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back_sitting'))
-                                    ->required(),
+                                    ->saveUploadedFileUsing($this->createCompressedImageUploader('back_sitting')),
                             ]),
                     ]),
                 
