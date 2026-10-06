@@ -66,10 +66,12 @@ class PatientProfileResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withExists([
-                'physicalAssessments',
-                'imagingRecords',
-            ]))
+            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query
+                ->with(['activePackages'])
+                ->withExists([
+                    'physicalAssessments',
+                    'imagingRecords',
+                ]))
             ->columns([
                 Tables\Columns\TextColumn::make('patient_id')
                     ->label('客户编号')
@@ -92,14 +94,25 @@ class PatientProfileResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('联系电话')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('latestPackage.package_name')
-                    ->label('套餐名称')
-                    ->default('-')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('latestPackage.remaining_sessions')
-                    ->label('剩余次数')
-                    ->default('-')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('activePackages.package_name')
+                    ->label('当前有效套餐')
+                    ->badge()
+                    ->separator(',')
+                    ->limitList(2)
+                    ->expandableLimitedList()
+                    ->default('无有效套餐'),
+                Tables\Columns\TextColumn::make('total_remaining_sessions')
+                    ->label('可用总次数')
+                    ->state(function (\Illuminate\Database\Eloquent\Model $record): int {
+                        return (int) $record->activePackages->sum('remaining_sessions');
+                    })
+                    ->description(function (\Illuminate\Database\Eloquent\Model $record) {
+                        $count = $record->activePackages->count();
+
+                        return $count > 1 ? "(含 {$count} 个有效套餐)" : null;
+                    })
+                    ->weight('bold')
+                    ->color(fn (int $state): string => $state > 0 ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('latestConsumptionRecord.treatment_date')
                     ->label('最近康复日期')
                     ->formatStateUsing(fn ($state) => $state ? $state->format('Y-m-d') : '-')

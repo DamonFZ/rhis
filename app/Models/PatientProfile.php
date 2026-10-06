@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -22,6 +23,20 @@ class PatientProfile extends Model
     public function patientPackages(): HasMany
     {
         return $this->hasMany(PatientPackage::class, 'patient_profile_id');
+    }
+
+    /**
+     * 当前有效套餐：状态为 active、剩余次数 > 0、且未过期
+     */
+    public function activePackages(): HasMany
+    {
+        return $this->hasMany(PatientPackage::class, 'patient_profile_id')
+            ->where('status', 'active')
+            ->where('remaining_sessions', '>', 0)
+            ->where(function (Builder $query) {
+                $query->whereNull('expiry_date')
+                    ->orWhereDate('expiry_date', '>=', now()->toDateString());
+            });
     }
 
     public function latestPackage(): HasOne
