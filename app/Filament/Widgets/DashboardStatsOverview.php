@@ -51,6 +51,12 @@ class DashboardStatsOverview extends BaseWidget
             ->whereYear('treatment_date', $currentYear)
             ->distinct('patient_profile_id')
             ->count('patient_profile_id');
+
+        // 上月服务人次：去重客户数
+        $lastMonthActiveClients = ConsumptionRecord::whereMonth('treatment_date', $lastMonth)
+            ->whereYear('treatment_date', $lastYear)
+            ->distinct('patient_profile_id')
+            ->count('patient_profile_id');
         
         // 累计服务总次数
         $totalServices = ConsumptionRecord::sum('deducted_sessions');
@@ -140,7 +146,7 @@ class DashboardStatsOverview extends BaseWidget
             
             // 本月服务人次
             Stat::make('本月服务人次', $monthlyActiveClients)
-                ->description('产生划扣的去重客户')
+                ->description('上月服务人次：' . $lastMonthActiveClients)
                 ->color('info')
                 ->icon('heroicon-o-users'),
             
