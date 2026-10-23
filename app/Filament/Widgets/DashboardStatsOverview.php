@@ -45,6 +45,15 @@ class DashboardStatsOverview extends BaseWidget
             ->sum(function ($record) {
                 return $record->patientPackage ? $record->patientPackage->average_price * $record->deducted_sessions : 0;
             });
+
+        // 上月服务产值
+        $lastMonthServiceOutput = ConsumptionRecord::whereMonth('treatment_date', $lastMonth)
+            ->whereYear('treatment_date', $lastYear)
+            ->whereHas('patientPackage')
+            ->get()
+            ->sum(function ($record) {
+                return $record->patientPackage ? $record->patientPackage->average_price * $record->deducted_sessions : 0;
+            });
         
         // 本月服务人次：去重客户数
         $monthlyActiveClients = ConsumptionRecord::whereMonth('treatment_date', $currentMonth)
@@ -140,7 +149,7 @@ class DashboardStatsOverview extends BaseWidget
             
             // 本月服务产值
             Stat::make('本月服务产值', '¥' . number_format($monthlyServiceOutput, 2))
-                ->description('实际服务产生的价值')
+                ->description('上月服务产值：¥' . number_format($lastMonthServiceOutput, 2))
                 ->color('primary')
                 ->icon('heroicon-o-sparkles'),
             
