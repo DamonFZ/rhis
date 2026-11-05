@@ -107,6 +107,33 @@
 
 ---
 
+## 5.1 campaigns（营销活动表）
+
+| 字段名        | 类型        | 长度  | 是否可为空 | 默认值 | 备注          |
+| ---------- | --------- | --- | ----- | --- | ----------- |
+| id         | bigint    | 20  | 否    | 自增  | 主键          |
+| name       | varchar   | 200 | 否    | -   | 活动名称        |
+| start_date | datetime  | -   | 否    | -   | 活动开始时间      |
+| end_date   | datetime  | -   | 否    | -   | 活动结束时间      |
+| is_active  | boolean   | -   | 否    | true| 强制启停开关      |
+| created_at | timestamp | -   | 是    | -   | 创建时间        |
+| updated_at | timestamp | -   | 是    | -   | 更新时间        |
+
+## 5.2 campaign_rehab_package（营销活动-套餐关联表）
+
+| 字段名              | 类型     | 长度  | 是否可为空 | 默认值 | 备注                |
+| ---------------- | ------ | --- | ----- | --- | ----------------- |
+| id               | bigint | 20  | 否    | 自增  | 主键                |
+| campaign_id      | bigint | 20  | 否    | -   | 活动ID（外键 campaigns） |
+| rehab_package_id | bigint | 20  | 否    | -   | 套餐ID（外键 rehab_packages）|
+| extra_count      | int    | 11  | 否    | 0   | 赠送次数              |
+| created_at       | timestamp | - | 是 | - | 创建时间              |
+| updated_at       | timestamp | - | 是 | - | 更新时间              |
+
+**唯一约束：** `(campaign_id, rehab_package_id)`
+
+---
+
 ## 6. patient_profiles（客户档案表）
 
 | 字段名              | 类型        | 长度  | 是否可为空 | 默认值 | 备注       |

@@ -30,11 +30,21 @@ class PatientPackagesRelationManager extends RelationManager
                         if ($state) {
                             $rehabPackage = RehabPackage::find($state);
                             if ($rehabPackage) {
+                                // 营销活动：检查是否有进行中的活动赠送次数
+                                $campaignInfo = \App\Models\Campaign::getActiveExtraCountForPackage($rehabPackage->id);
+                                $extraCount = $campaignInfo ? $campaignInfo['extra_count'] : 0;
+                                $campaignName = $campaignInfo ? $campaignInfo['campaign']->name : null;
+
+                                $totalSessions = $rehabPackage->total_sessions + $extraCount;
+                                $packageName = $campaignName
+                                    ? $rehabPackage->name." [{$campaignName}赠{$extraCount}次]"
+                                    : $rehabPackage->name;
+
                                 $set('package_code', $rehabPackage->package_code);
-                                $set('package_name', $rehabPackage->name);
+                                $set('package_name', $packageName);
                                 $set('package_type', $rehabPackage->package_type);
-                                $set('total_sessions', $rehabPackage->total_sessions);
-                                $set('remaining_sessions', $rehabPackage->total_sessions);
+                                $set('total_sessions', $totalSessions);
+                                $set('remaining_sessions', $totalSessions);
                                 $set('price', $rehabPackage->price);
                                 $set('original_price', $rehabPackage->original_price);
                                 $set('average_price', $rehabPackage->average_price);
@@ -332,9 +342,19 @@ class PatientPackagesRelationManager extends RelationManager
                             $set = \App\Models\CommissionSetting::first();
                             $rates = [1 => $set->sales_type_1_rate / 100, 2 => $set->sales_type_2_rate / 100, 3 => $set->sales_type_3_rate / 100];
 
-                            // 次数累加：总次数 = 原总次数 + 新套餐次数；剩余 = 原剩余 + 新套餐次数 - 结转已用
-                            $newTotal = $oldTotal + $newR->total_sessions;
-                            $newRemaining = max(0, $oldRemaining + $newR->total_sessions - $usedSessions);
+                            // 营销活动：检查新套餐是否有进行中的活动赠送次数
+                            $campaignInfo = \App\Models\Campaign::getActiveExtraCountForPackage($newR->id);
+                            $extraCount = $campaignInfo ? $campaignInfo['extra_count'] : 0;
+                            $campaignName = $campaignInfo ? $campaignInfo['campaign']->name : null;
+
+                            $newPackageTotal = $newR->total_sessions + $extraCount;
+                            $packageName = $campaignName
+                                ? $newR->name." [{$campaignName}赠{$extraCount}次]"
+                                : $newR->name;
+
+                            // 次数累加：总次数 = 原总次数 + 新套餐次数(含赠送)；剩余 = 原剩余 + 新套餐次数(含赠送) - 结转已用
+                            $newTotal = $oldTotal + $newPackageTotal;
+                            $newRemaining = max(0, $oldRemaining + $newPackageTotal - $usedSessions);
 
                             // 到期日顺延：固定到期日优先，否则在原到期日（未过期）基础上顺延，否则从今日起算
                             $totalDays = ($newR->validity_days ?? 0) + ($newR->extension_days ?? 0);
@@ -348,7 +368,7 @@ class PatientPackagesRelationManager extends RelationManager
 
                             $newP = \App\Models\PatientPackage::create([
                                 'patient_profile_id' => $record->patient_profile_id, 'package_code' => $newR->package_code,
-                                'package_name' => $newR->name, 'package_type' => $newR->package_type,
+                                'package_name' => $packageName, 'package_type' => $newR->package_type,
                                 'total_sessions' => $newTotal, 'remaining_sessions' => $newRemaining,
                                 'price' => $newR->price, 'original_price' => $newR->original_price, 'average_price' => $newR->average_price,
                                 'status' => 'active', 'is_extendable' => $newR->is_extendable, 'extension_days' => $newR->extension_days,

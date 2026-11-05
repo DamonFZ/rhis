@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class RehabPackage extends Model
 {
@@ -38,4 +39,11 @@ class RehabPackage extends Model
         'valid_start_date' => 'date',
         'valid_end_date' => 'date',
     ];
+
+    public function campaigns(): BelongsToMany
+    {
+        return $this->belongsToMany(Campaign::class)
+            ->withPivot('extra_count')
+            ->withTimestamps();
+    }
 }

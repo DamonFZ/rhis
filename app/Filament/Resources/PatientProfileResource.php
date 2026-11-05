@@ -237,13 +237,23 @@ class PatientProfileResource extends Resource
                                         3 => ($setting->sales_type_3_rate ?? 2) / 100,
                                     ];
 
+                                    // 营销活动：检查是否有进行中的活动赠送次数
+                                    $campaignInfo = \App\Models\Campaign::getActiveExtraCountForPackage($rehabPkg->id);
+                                    $extraCount = $campaignInfo ? $campaignInfo['extra_count'] : 0;
+                                    $campaignName = $campaignInfo ? $campaignInfo['campaign']->name : null;
+
+                                    $totalSessions = $rehabPkg->total_sessions + $extraCount;
+                                    $packageName = $campaignName
+                                        ? $rehabPkg->name." [{$campaignName}赠{$extraCount}次]"
+                                        : $rehabPkg->name;
+
                                     \App\Models\PatientPackage::create([
                                         'patient_profile_id' => $record->id,
                                         'package_code' => $rehabPkg->package_code,
-                                        'package_name' => $rehabPkg->name,
+                                        'package_name' => $packageName,
                                         'package_type' => $rehabPkg->package_type,
-                                        'total_sessions' => $rehabPkg->total_sessions,
-                                        'remaining_sessions' => $rehabPkg->total_sessions,
+                                        'total_sessions' => $totalSessions,
+                                        'remaining_sessions' => $totalSessions,
                                         'price' => $rehabPkg->price,
                                         'original_price' => $rehabPkg->original_price,
                                         'average_price' => $rehabPkg->average_price,
