@@ -2,14 +2,14 @@
 
 namespace App\Exports;
 
-use App\Models\PatientPackage;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class SalesDetailSheet implements FromCollection, WithHeadings, WithTitle, WithMapping
+class SalesDetailSheet implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     protected string $month;
 
@@ -36,22 +36,28 @@ class SalesDetailSheet implements FromCollection, WithHeadings, WithTitle, WithM
 
     protected function buildFlatData(): Collection
     {
-        $records = PatientPackage::with(['salesperson', 'patient'])
-            ->whereNotNull('salesperson_id')
-            ->whereYear('purchase_date', $this->year)
-            ->whereMonth('purchase_date', $this->monthNum)
-            ->get();
+        // 从 patient_package_sales 中间表读取，支持多人平分
+        $employees = User::whereHas('salesPackages', function ($q) {
+            $q->whereYear('purchase_date', $this->year)
+                ->whereMonth('purchase_date', $this->monthNum);
+        })->with(['salesPackages' => function ($q) {
+            $q->whereYear('purchase_date', $this->year)
+                ->whereMonth('purchase_date', $this->monthNum)
+                ->with('patient');
+        }])->get();
 
         $flat = [];
-        foreach ($records as $record) {
-            $flat[] = [
-                'employee_name' => $record->salesperson ? $record->salesperson->name : '未知',
-                'patient_name' => $record->patient ? $record->patient->name : '未知',
-                'package_name' => $record->package_name,
-                'sales_type' => isset($this->salesTypeLabels[$record->sales_type]) ? $this->salesTypeLabels[$record->sales_type] : '-',
-                'price' => $record->price,
-                'commission_amount' => $record->sales_commission,
-            ];
+        foreach ($employees as $employee) {
+            foreach ($employee->salesPackages as $package) {
+                $flat[] = [
+                    'employee_name' => $employee->name,
+                    'patient_name' => $package->patient ? $package->patient->name : '未知',
+                    'package_name' => $package->package_name,
+                    'sales_type' => isset($this->salesTypeLabels[$package->sales_type]) ? $this->salesTypeLabels[$package->sales_type] : '-',
+                    'price' => $package->price,
+                    'commission_amount' => $package->pivot->commission_amount,
+                ];
+            }
         }
 
         return collect($flat);

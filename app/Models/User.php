@@ -63,6 +63,16 @@ class User extends Authenticatable implements FilamentUser
             ->withTimestamps();
     }
 
+    /**
+     * 该员工参与分成的套餐（通过 patient_package_sales 中间表）
+     */
+    public function salesPackages(): BelongsToMany
+    {
+        return $this->belongsToMany(PatientPackage::class, 'patient_package_sales')
+            ->withPivot('commission_amount')
+            ->withTimestamps();
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true;

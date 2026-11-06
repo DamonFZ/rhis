@@ -2,7 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\PatientPackage;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Pages\Page;
@@ -88,10 +87,11 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $year = $monthParts[0];
                         $month = $monthParts[1];
 
-                        return PatientPackage::where('salesperson_id', $record->id)
+                        return $record->salesPackages()
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
-                            ->sum('sales_commission');
+                            ->get()
+                            ->sum(fn ($pkg) => $pkg->pivot->commission_amount);
                     }),
                 TextColumn::make('total_commission')
                     ->label('月度总提成')
@@ -115,10 +115,11 @@ class EmployeeCommissionReport extends Page implements HasTable
                         }
 
                         // 销售提成
-                        $salesTotal = PatientPackage::where('salesperson_id', $record->id)
+                        $salesTotal = $record->salesPackages()
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
-                            ->sum('sales_commission');
+                            ->get()
+                            ->sum(fn ($pkg) => $pkg->pivot->commission_amount);
 
                         return $serviceTotal + $salesTotal;
                     }),
@@ -143,7 +144,7 @@ class EmployeeCommissionReport extends Page implements HasTable
                         $year = $monthParts[0];
                         $month = $monthParts[1];
 
-                        return PatientPackage::where('salesperson_id', $record->id)
+                        return $record->salesPackages()
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
                             ->count();
@@ -279,8 +280,8 @@ class EmployeeCommissionReport extends Page implements HasTable
                             ];
                         }
 
-                        // 销售记录
-                        $salesRecords = PatientPackage::where('salesperson_id', $record->id)
+                        // 销售记录（从 patient_package_sales 中间表读取，支持多人平分）
+                        $salesRecords = $record->salesPackages()
                             ->whereYear('purchase_date', $year)
                             ->whereMonth('purchase_date', $month)
                             ->with('patient')
@@ -294,13 +295,14 @@ class EmployeeCommissionReport extends Page implements HasTable
                             3 => '协助开单',
                         ];
                         foreach ($salesRecords as $sale) {
-                            $salesTotal += $sale->sales_commission;
+                            $commission = $sale->pivot->commission_amount;
+                            $salesTotal += $commission;
                             $salesDetails[] = [
                                 'patient_name' => $sale->patient ? $sale->patient->name : '未知',
                                 'package_name' => $sale->package_name,
                                 'sales_type' => isset($salesTypeLabels[$sale->sales_type]) ? $salesTypeLabels[$sale->sales_type] : '-',
                                 'price' => $sale->price,
-                                'commission_amount' => $sale->sales_commission,
+                                'commission_amount' => $commission,
                             ];
                         }
 

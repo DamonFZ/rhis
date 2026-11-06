@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\PatientPackage;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -33,19 +32,25 @@ class SummarySheet implements FromCollection, WithHeadings, WithMapping, WithTit
         return User::where(function ($query) use ($firstDayOfMonth) {
             $query->whereNull('resigned_at')
                 ->orWhere('resigned_at', '>=', $firstDayOfMonth);
-        })->with(['consumptionRecords' => function ($query) {
-            $query->whereYear('treatment_date', $this->year)
-                ->whereMonth('treatment_date', $this->monthNum);
-        }])->get()->map(function (User $user) {
+        })->with([
+            'consumptionRecords' => function ($query) {
+                $query->whereYear('treatment_date', $this->year)
+                    ->whereMonth('treatment_date', $this->monthNum);
+            },
+            'salesPackages' => function ($query) {
+                $query->whereYear('purchase_date', $this->year)
+                    ->whereMonth('purchase_date', $this->monthNum);
+            },
+        ])->get()->map(function (User $user) {
             $serviceTotal = 0;
             foreach ($user->consumptionRecords as $cr) {
                 $serviceTotal += $cr->pivot->commission_amount ?? 0;
             }
 
-            $salesTotal = PatientPackage::where('salesperson_id', $user->id)
-                ->whereYear('purchase_date', $this->year)
-                ->whereMonth('purchase_date', $this->monthNum)
-                ->sum('sales_commission');
+            $salesTotal = 0;
+            foreach ($user->salesPackages as $pkg) {
+                $salesTotal += $pkg->pivot->commission_amount ?? 0;
+            }
 
             return [
                 'user' => $user,
@@ -53,10 +58,7 @@ class SummarySheet implements FromCollection, WithHeadings, WithMapping, WithTit
                 'sales_commission' => $salesTotal,
                 'total_commission' => $serviceTotal + $salesTotal,
                 'service_count' => $user->consumptionRecords->count(),
-                'sales_count' => PatientPackage::where('salesperson_id', $user->id)
-                    ->whereYear('purchase_date', $this->year)
-                    ->whereMonth('purchase_date', $this->monthNum)
-                    ->count(),
+                'sales_count' => $user->salesPackages->count(),
             ];
         })->filter(function ($item) {
             return $item['service_commission'] > 0 || $item['sales_commission'] > 0;
