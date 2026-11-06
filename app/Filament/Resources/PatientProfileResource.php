@@ -200,9 +200,10 @@ class PatientProfileResource extends Resource
                                     ->options(\App\Models\RehabPackage::where('status', 1)->pluck('name', 'id'))
                                     ->required()
                                     ->searchable(),
-                                \Filament\Forms\Components\Select::make('salesperson_id')
+                                \Filament\Forms\Components\Select::make('salesperson_ids')
                                     ->label('开单员工（销售）')
                                     ->options(\App\Models\User::pluck('name', 'id'))
+                                    ->multiple()
                                     ->required()
                                     ->searchable(),
                                 \Filament\Forms\Components\Select::make('sales_type')
@@ -247,7 +248,13 @@ class PatientProfileResource extends Resource
                                         ? $rehabPkg->name." [{$campaignName}赠{$extraCount}次]"
                                         : $rehabPkg->name;
 
-                                    \App\Models\PatientPackage::create([
+                                    // 销售提成平分逻辑
+                                    $employeeIds = array_values((array) $data['salesperson_ids']);
+                                    $employeeCount = count($employeeIds);
+                                    $totalCommission = $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03);
+                                    $splitCommission = $employeeCount > 0 ? round($totalCommission / $employeeCount, 2) : 0;
+
+                                    $newPackage = \App\Models\PatientPackage::create([
                                         'patient_profile_id' => $record->id,
                                         'package_code' => $rehabPkg->package_code,
                                         'package_name' => $packageName,
@@ -263,10 +270,17 @@ class PatientProfileResource extends Resource
                                         'is_shareable' => $rehabPkg->is_shareable,
                                         'purchase_date' => now(),
                                         'expiry_date' => $expiryDate,
-                                        'salesperson_id' => $data['salesperson_id'],
+                                        'salesperson_id' => $employeeIds[0] ?? null,
                                         'sales_type' => $data['sales_type'],
-                                        'sales_commission' => $rehabPkg->price * ($rates[$data['sales_type']] ?? 0.03),
+                                        'sales_commission' => $totalCommission,
                                     ]);
+
+                                    // 为每位选中员工写入平分提成记录
+                                    $syncData = [];
+                                    foreach ($employeeIds as $employeeId) {
+                                        $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+                                    }
+                                    $newPackage->salespersons()->sync($syncData);
                                 });
                                 \Filament\Notifications\Notification::make()->title('套餐购买成功')->success()->send();
                             })

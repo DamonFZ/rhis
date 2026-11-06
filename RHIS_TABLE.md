@@ -243,6 +243,21 @@
 
 ---
 
+## 9.1 patient_package_sales（套餐销售分成表）
+
+| 字段名                | 类型        | 长度   | 是否可为空 | 默认值 | 备注                          |
+| ------------------ | --------- | ---- | ----- | --- | --------------------------- |
+| id                 | bigint    | 20   | 否     | 自增  | 主键                          |
+| patient_package_id | bigint    | 20   | 否     | -   | 套餐ID（外键 patient_packages）   |
+| user_id            | bigint    | 20   | 否     | -   | 员工ID（外键 users）             |
+| commission_amount  | decimal   | 10,2 | 否     | 0   | 该员工分得的销售提成                   |
+| created_at         | timestamp | -    | 是     | -   | 创建时间                        |
+| updated_at         | timestamp | -    | 是     | -   | 更新时间                        |
+
+**唯一约束：** `(patient_package_id, user_id)`
+
+---
+
 ## 10. physical_assessments（康复体态评估表）
 
 | 字段名                | 类型        | 长度  | 是否可为空 | 默认值 | 备注                      |

@@ -51,7 +51,9 @@ class PatientPackage extends Model
         });
 
         static::saving(function ($model) {
-            if ($model->isDirty('sales_commission') && $model->sales_commission > 0) return;
+            if ($model->isDirty('sales_commission') && $model->sales_commission > 0) {
+                return;
+            }
             $setting = \App\Models\CommissionSetting::first();
             // 将百分比转换为小数计算
             $commissionRates = [
@@ -76,6 +78,16 @@ class PatientPackage extends Model
     public function salesperson(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'salesperson_id');
+    }
+
+    /**
+     * 参与分成的所有开单员工（多选销售，平分提成）
+     */
+    public function salespersons(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'patient_package_sales')
+            ->withPivot('commission_amount')
+            ->withTimestamps();
     }
 
     public function consumptionRecords(): \Illuminate\Database\Eloquent\Relations\HasMany

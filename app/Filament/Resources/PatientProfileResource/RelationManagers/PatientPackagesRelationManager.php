@@ -151,9 +151,10 @@ class PatientPackagesRelationManager extends RelationManager
                             ])
                             ->default('active')
                             ->required(),
-                        Forms\Components\Select::make('salesperson_id')
-                            ->relationship('salesperson', 'name')
+                        Forms\Components\Select::make('salesperson_ids')
                             ->label('开单员工（销售）')
+                            ->options(\App\Models\User::pluck('name', 'id'))
+                            ->multiple()
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -172,6 +173,84 @@ class PatientPackagesRelationManager extends RelationManager
                     ])
                     ->columns(2),
             ]);
+    }
+
+    /**
+     * 创建前：将多选员工数组转换为首个员工ID写入 salesperson_id，保留数组用于 afterCreate 平分
+     */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $employeeIds = array_values(array_filter((array) ($data['salesperson_ids'] ?? []), 'is_numeric'));
+        $data['salesperson_id'] = $employeeIds[0] ?? null;
+        unset($data['salesperson_ids']);
+
+        // 暂存员工ID数组到实例属性，供 afterCreate 使用
+        $this->pendingSalespersonIds = $employeeIds;
+
+        return $data;
+    }
+
+    /**
+     * 创建后：平分销售提成并写入 patient_package_sales
+     */
+    protected function afterCreate(): void
+    {
+        $this->syncSalespersons($this->record, $this->pendingSalespersonIds ?? []);
+    }
+
+    /**
+     * 编辑回显：将 pivot 中的员工ID回填到多选框
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['salesperson_ids'] = $this->record->salespersons()->pluck('user_id')->toArray();
+
+        return $data;
+    }
+
+    /**
+     * 编辑保存前：同样转换为首个员工ID
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $employeeIds = array_values(array_filter((array) ($data['salesperson_ids'] ?? []), 'is_numeric'));
+        $data['salesperson_id'] = $employeeIds[0] ?? null;
+        unset($data['salesperson_ids']);
+
+        $this->pendingSalespersonIds = $employeeIds;
+
+        return $data;
+    }
+
+    /**
+     * 编辑保存后：重新同步销售分成
+     */
+    protected function afterSave(): void
+    {
+        $this->syncSalespersons($this->record, $this->pendingSalespersonIds ?? []);
+    }
+
+    /**
+     * 通用：根据总提成平分并同步到中间表
+     */
+    protected function syncSalespersons(\App\Models\PatientPackage $package, array $employeeIds): void
+    {
+        $employeeCount = count($employeeIds);
+        if ($employeeCount === 0) {
+            $package->salespersons()->detach();
+
+            return;
+        }
+
+        $totalCommission = (float) $package->sales_commission;
+        $splitCommission = round($totalCommission / $employeeCount, 2);
+
+        $syncData = [];
+        foreach ($employeeIds as $employeeId) {
+            $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+        }
+
+        $package->salespersons()->sync($syncData);
     }
 
     public function table(Table $table): Table
@@ -232,10 +311,10 @@ class PatientPackagesRelationManager extends RelationManager
                     ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('salesperson.name')
+                Tables\Columns\TextColumn::make('salespersons.name')
                     ->label('开单员工')
-                    ->searchable()
-                    ->sortable()
+                    ->badge()
+                    ->separator(',')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('sales_commission')
                     ->label('销售提成(元)')
@@ -319,9 +398,10 @@ class PatientPackagesRelationManager extends RelationManager
 
                                 return '';
                             }),
-                        \Filament\Forms\Components\Select::make('sales_id')
+                        \Filament\Forms\Components\Select::make('sales_ids')
                             ->label('升单员工')
                             ->options(\App\Models\User::pluck('name', 'id'))
+                            ->multiple()
                             ->required(),
                         \Filament\Forms\Components\Select::make('sales_type')
                             ->label('提成类型')
@@ -366,6 +446,12 @@ class PatientPackagesRelationManager extends RelationManager
                                 $expiryDate = now()->addDays($totalDays);
                             }
 
+                            // 销售提成平分逻辑
+                            $employeeIds = array_values((array) $data['sales_ids']);
+                            $employeeCount = count($employeeIds);
+                            $totalCommission = $data['diff'] * ($rates[$data['sales_type']] ?? 0.03);
+                            $splitCommission = $employeeCount > 0 ? round($totalCommission / $employeeCount, 2) : 0;
+
                             $newP = \App\Models\PatientPackage::create([
                                 'patient_profile_id' => $record->patient_profile_id, 'package_code' => $newR->package_code,
                                 'package_name' => $packageName, 'package_type' => $newR->package_type,
@@ -374,9 +460,16 @@ class PatientPackagesRelationManager extends RelationManager
                                 'status' => 'active', 'is_extendable' => $newR->is_extendable, 'extension_days' => $newR->extension_days,
                                 'is_shareable' => $newR->is_shareable, 'purchase_date' => now(),
                                 'expiry_date' => $expiryDate,
-                                'salesperson_id' => $data['sales_id'], 'sales_type' => $data['sales_type'],
-                                'sales_commission' => $data['diff'] * ($rates[$data['sales_type']] ?? 0.03),
+                                'salesperson_id' => $employeeIds[0] ?? null, 'sales_type' => $data['sales_type'],
+                                'sales_commission' => $totalCommission,
                             ]);
+
+                            // 为每位升单员工写入平分提成记录
+                            $syncData = [];
+                            foreach ($employeeIds as $employeeId) {
+                                $syncData[$employeeId] = ['commission_amount' => $splitCommission];
+                            }
+                            $newP->salespersons()->sync($syncData);
 
                             if ($usedSessions > 0) {
                                 \App\Models\ConsumptionRecord::create([
